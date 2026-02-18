@@ -1,0 +1,127 @@
+# KKVat Automation Platform Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    session:
+      timeout: 15m # 15-minute idle timeout (NIST requirement)
+  error:
+    include-message: always
+    include-stacktrace: never
+
+spring:
+  application:
+    name: kkvat-automation-platform
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/kkvat_automation?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate # Use validate in production, update for development
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Jackson JSON Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+    default-property-inclusion: non_null
+  
+  # Security
+  security:
+    require-ssl: false
+
+# Application Security Settings
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:kkvat-automation-platform-secret-key-change-in-production-minimum-256-bits}
+      expiration: 900000 # 15 minutes in milliseconds
+      refresh-expiration: 3600000 # 1 hour
+    password:
+      min-length: 12
+      require-uppercase: true
+      require-lowercase: true
+      require-digit: true
+      require-special-char: true
+      expiry-days: 90
+    account:
+      max-failed-attempts: 5
+      lockout-duration: 30 # minutes
+    session:
+      max-concurrent-sessions: 1
+  
+  # Playwright Configuration
+  playwright:
+    browser: chromium # chromium, firefox, or webkit
+    headless: false
+    timeout: 30000
+    screenshot-path: ${user.home}/kkvat/screenshots
+    video-path: ${user.home}/kkvat/videos
+  
+  # Audit Logging
+  audit:
+    enabled: true
+    log-all-requests: true
+  
+  # CORS Configuration (adjust for your frontend URL)
+  cors:
+    allowed-origins: http://localhost:4200,http://localhost:8080
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.kkvat.automation: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ${user.home}/kkvat/logs/application.log
+    max-size: 10MB
+    max-history: 30
+
+# Actuator Configuration (for monitoring)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
