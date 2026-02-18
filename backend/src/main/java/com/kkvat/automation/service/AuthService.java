@@ -51,6 +51,9 @@ public class AuthService {
     private AuditService auditService;
     
     @Autowired
+    private MenuItemService menuItemService;
+    
+    @Autowired
     private HttpServletRequest request;
     
     @Value("${app.security.jwt.expiration}")
@@ -126,6 +129,10 @@ public class AuthService {
             
             // Build response
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            
+            // Get menu items for the logged-in user
+            java.util.List<com.kkvat.automation.dto.MenuItemDTO> userMenus = menuItemService.getMenuItemsByUserId(user.getId());
+            
             LoginResponse response = LoginResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
@@ -139,6 +146,7 @@ public class AuthService {
                             .lastName(user.getLastName())
                             .role(user.getRole().name())
                             .build())
+                    .menus(userMenus)
                     .build();
             
             auditService.logSuccess("LOGIN", "USER", user.getId(), null);

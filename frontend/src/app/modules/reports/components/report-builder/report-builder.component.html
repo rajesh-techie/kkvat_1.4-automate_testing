@@ -1,0 +1,312 @@
+<div class="report-builder-container">
+  <div class="builder-header">
+    <h2>Report Builder</h2>
+    <div class="step-indicator">
+      <span *ngFor="let i of [1,2,3,4,5]" 
+            [class.active]="i === currentStep"
+            [class.completed]="i < currentStep"
+            class="step">
+        {{ i }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="error" class="alert alert-danger">
+    <strong>Error:</strong> {{ error }}
+  </div>
+  <div *ngIf="success" class="alert alert-success">
+    <strong>Success:</strong> {{ success }}
+  </div>
+
+  <div class="builder-content">
+    
+    <!-- Step 1: Report Details and View Selection -->
+    <div *ngIf="currentStep === 1" class="step-content">
+      <h3>{{ getStepTitle() }}</h3>
+      <form [formGroup]="reportForm">
+        <div class="form-group">
+          <label for="name">Report Name *</label>
+          <input 
+            type="text" 
+            id="name" 
+            class="form-control" 
+            formControlName="name"
+            placeholder="Enter report name">
+          <small class="form-text" *ngIf="reportForm.get('name')?.invalid">
+            Name is required and must be at least 3 characters
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea 
+            id="description" 
+            class="form-control" 
+            formControlName="description"
+            rows="3"
+            placeholder="Enter report description"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="reportType">Report Type *</label>
+          <select id="reportType" class="form-control" formControlName="reportType">
+            <option value="EXECUTION">Test Executions</option>
+            <option value="USER_ACTIVITY">User Activity</option>
+            <option value="CUSTOM">Custom</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="isPublic">
+            Make this report public for all users
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>Select Data Source *</label>
+          <div class="views-grid" *ngIf="!loading">
+            <div *ngFor="let view of views" 
+                 class="view-card"
+                 [class.selected]="selectedViewId === view.id"
+                 (click)="onViewSelected(view.id)">
+              <h5>{{ view.displayName }}</h5>
+              <p>{{ view.description }}</p>
+            </div>
+          </div>
+          <div *ngIf="loading" class="loading-spinner">Loading data sources...</div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Step 2: Column Selection -->
+    <div *ngIf="currentStep === 2" class="step-content">
+      <h3>{{ getStepTitle() }}</h3>
+      <p class="step-description">Select the columns you want to include in the report</p>
+      
+      <div class="columns-grid">
+        <div *ngFor="let field of allFields" class="column-item">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              [checked]="isColumnSelected(field.fieldName)"
+              (change)="toggleColumn(field.fieldName)">
+            <span class="field-name">{{ field.displayName }}</span>
+            <span class="field-type">({{ field.fieldType }})</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="selected-info">
+        <strong>Selected Columns: {{ selectedColumns.size }}</strong>
+        <div *ngIf="selectedColumns.size === 0" class="warning">
+          Please select at least one column
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Add Filters -->
+    <div *ngIf="currentStep === 3" class="step-content">
+      <h3>{{ getStepTitle() }}</h3>
+      <p class="step-description">Add filters to limit the report data (optional)</p>
+      
+      <div class="filters-container">
+        <div *ngFor="let filter of filters; let i = index" class="filter-row">
+          <div class="filter-field">
+            <label>Field</label>
+            <select 
+              class="form-control" 
+              [value]="filter.field"
+              (change)="updateFilter(i, 'field', $any($event.target).value)">
+              <option *ngFor="let field of filterableFields" [value]="field.fieldName">
+                {{ field.displayName }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filter-operator">
+            <label>Operator</label>
+            <select 
+              class="form-control"
+              [value]="filter.operator"
+              (change)="updateFilter(i, 'operator', $any($event.target).value)">
+              <option value="=">=</option>
+              <option value="<">&lt;</option>
+              <option value=">">&gt;</option>
+              <option value="<=">&lt;=</option>
+              <option value=">=">&gt;=</option>
+              <option value="LIKE">LIKE</option>
+            </select>
+          </div>
+
+          <div class="filter-value">
+            <label>Value</label>
+            <input 
+              type="text" 
+              class="form-control"
+              [value]="filter.value"
+              (input)="updateFilter(i, 'value', $any($event.target).value)"
+              placeholder="Enter value">
+          </div>
+
+          <button type="button" class="btn btn-danger btn-sm" (click)="removeFilter(i)">
+            Remove
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-secondary" (click)="addFilter()">
+        + Add Filter
+      </button>
+
+      <div class="filter-info">
+        <small>Filters help narrow down the data in your report. You can add multiple filters.</small>
+      </div>
+    </div>
+
+    <!-- Step 4: Configure Sorting -->
+    <div *ngIf="currentStep === 4" class="step-content">
+      <h3>{{ getStepTitle() }}</h3>
+      <p class="step-description">Define the sort order for your report data (optional)</p>
+      
+      <div class="sort-container">
+        <div *ngFor="let sort of sortConfig; let i = index" class="sort-row">
+          <span class="sort-index">{{ i + 1 }}.</span>
+
+          <div class="sort-field">
+            <label>Field</label>
+            <select 
+              class="form-control"
+              [value]="sort.field"
+              (change)="updateSort(i, 'field', $any($event.target).value)">
+              <option *ngFor="let field of sortableFields" [value]="field.fieldName">
+                {{ field.displayName }}
+              </option>
+            </select>
+          </div>
+
+          <div class="sort-direction">
+            <label>Direction</label>
+            <select 
+              class="form-control"
+              [value]="sort.direction"
+              (change)="updateSort(i, 'direction', $any($event.target).value)">
+              <option value="ASC">Ascending ↑</option>
+              <option value="DESC">Descending ↓</option>
+            </select>
+          </div>
+
+          <div class="sort-actions">
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary btn-sm"
+              [disabled]="i === 0"
+              (click)="moveSortUp(i)"
+              title="Move up">
+              ↑
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary btn-sm"
+              [disabled]="i === sortConfig.length - 1"
+              (click)="moveSortDown(i)"
+              title="Move down">
+              ↓
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-danger btn-sm"
+              (click)="removeSort(i)">
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-secondary" (click)="addSort()">
+        + Add Sort Level
+      </button>
+
+      <div class="sort-info">
+        <small>Data will be sorted by the fields in the order you specify (priority 1, 2, 3, etc.)</small>
+      </div>
+    </div>
+
+    <!-- Step 5: Preview and Save -->
+    <div *ngIf="currentStep === 5" class="step-content">
+      <h3>{{ getStepTitle() }}</h3>
+      
+      <div class="preview-section">
+        <button 
+          type="button" 
+          class="btn btn-info"
+          (click)="previewReport()"
+          [disabled]="previewLoading">
+          {{ previewLoading ? 'Loading preview...' : 'Load Preview' }}
+        </button>
+
+        <div *ngIf="previewData.length > 0" class="preview-table">
+          <table class="table table-sm">
+            <thead *ngIf="selectedColumns.size > 0">
+              <tr>
+                <th *ngFor="let col of selectedColumns">{{ col }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of previewData">
+                <td *ngFor="let col of selectedColumns">{{ row[col] || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="summary-section">
+        <h5>Report Summary</h5>
+        <ul>
+          <li><strong>Name:</strong> {{ reportForm.get('name')?.value }}</li>
+          <li><strong>Columns:</strong> {{ selectedColumns.size }}</li>
+          <li><strong>Filters:</strong> {{ filters.length > 0 ? filters.length + ' filter(s)' : 'None' }}</li>
+          <li><strong>Sort by:</strong> {{ sortConfig.length > 0 ? sortConfig.length + ' field(s)' : 'Default' }}</li>
+          <li><strong>Public:</strong> {{ reportForm.get('isPublic')?.value ? 'Yes' : 'No' }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="builder-footer">
+    <button 
+      type="button" 
+      class="btn btn-secondary"
+      (click)="previousStep()"
+      [disabled]="currentStep === 1">
+      ← Previous
+    </button>
+
+    <div class="step-counter">
+      Step {{ currentStep }} of {{ totalSteps }}
+    </div>
+
+    <div class="action-buttons">
+      <button 
+        *ngIf="currentStep < totalSteps"
+        type="button" 
+        class="btn btn-primary"
+        (click)="nextStep()"
+        [disabled]="!validateStep(currentStep)">
+        Next →
+      </button>
+
+      <button 
+        *ngIf="currentStep === totalSteps"
+        type="button" 
+        class="btn btn-success"
+        (click)="saveReport()"
+        [disabled]="saving">
+        {{ saving ? 'Saving...' : 'Save Report' }}
+      </button>
+    </div>
+  </div>
+</div>

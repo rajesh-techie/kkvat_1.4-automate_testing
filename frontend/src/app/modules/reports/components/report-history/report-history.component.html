@@ -1,0 +1,149 @@
+<div class="history-container">
+  <div class="history-header">
+    <h2>Report History & Downloads</h2>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="error" class="alert alert-danger">
+    <strong>Error:</strong> {{ error }}
+    <button class="btn-close-alert" (click)="clearAlert()">✕</button>
+  </div>
+  <div *ngIf="success" class="alert alert-success">
+    <strong>Success:</strong> {{ success }}
+    <button class="btn-close-alert" (click)="clearAlert()">✕</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <h3>Filters</h3>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" class="form-control" [(ngModel)]="statusFilter">
+          <option *ngFor="let status of statuses" [value]="status">
+            {{ status === 'ALL' ? 'All Statuses' : getStatusDisplay(status) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="executionTypeFilter">Execution Type</label>
+        <select id="executionTypeFilter" class="form-control" [(ngModel)]="executionTypeFilter">
+          <option *ngFor="let type of executionTypes" [value]="type">
+            {{ type === 'ALL' ? 'All Types' : getExecutionTypeDisplay(type) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="dateFrom">From Date</label>
+        <input type="date" id="dateFrom" class="form-control" [(ngModel)]="dateFrom">
+      </div>
+
+      <div class="filter-group">
+        <label for="dateTo">To Date</label>
+        <input type="date" id="dateTo" class="form-control" [(ngModel)]="dateTo">
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn btn-primary" (click)="applyFilters()">
+        Apply Filters
+      </button>
+      <button class="btn btn-secondary" (click)="resetFilters()">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Executions Table -->
+  <div class="executions-section">
+    <div *ngIf="loading" class="loading">Loading execution history...</div>
+
+    <div *ngIf="!loading && executions.length === 0" class="no-data">
+      <p>No reports found matching your filters.</p>
+    </div>
+
+    <div *ngIf="!loading && executions.length > 0" class="executions-table">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Report Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Generated</th>
+            <th>Duration</th>
+            <th>Size</th>
+            <th>Rows</th>
+            <th>Error</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let execution of executions" [class.failed]="execution.status === 'FAILED'">
+            <td class="report-name">{{ execution.reportName }}</td>
+            <td>
+              <span class="execution-type-badge">
+                {{ getExecutionTypeDisplay(execution.executionType) }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(execution.status)">
+                {{ getStatusDisplay(execution.status) }}
+              </span>
+            </td>
+            <td class="date-cell">{{ formatDate(execution.createdAt) }}</td>
+            <td class="duration-cell">{{ formatDuration(execution.durationMs) }}</td>
+            <td class="size-cell">{{ formatFileSize(execution.fileSize) }}</td>
+            <td class="rows-cell" *ngIf="execution.rowCount">{{ execution.rowCount }}</td>
+            <td class="rows-cell" *ngIf="!execution.rowCount">-</td>
+            <td class="error-cell" *ngIf="execution.errorMessage">
+              <span class="error-tooltip" [title]="execution.errorMessage">
+                <strong>Error</strong>
+              </span>
+            </td>
+            <td class="error-cell" *ngIf="!execution.errorMessage">-</td>
+            <td class="actions-cell">
+              <button 
+                *ngIf="isDownloadable(execution)"
+                class="btn btn-sm btn-success" 
+                (click)="downloadReport(execution)"
+                [disabled]="downloading.has(execution.id)">
+                {{ downloading.has(execution.id) ? '⬇ Downloading...' : '⬇ Download' }}
+              </button>
+              <button 
+                *ngIf="!isDownloadable(execution)"
+                class="btn btn-sm btn-secondary" 
+                disabled
+                [title]="'Status: ' + execution.status">
+                Not Available
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!loading && executions.length > 0" class="pagination-controls">
+      <button 
+        class="btn btn-secondary btn-sm" 
+        (click)="previousPage()" 
+        [disabled]="!hasPreviousPage">
+        ← Previous
+      </button>
+
+      <span class="pagination-info">
+        Page {{ currentPage + 1 }} of {{ Math.ceil(totalExecutions / pageSize) }}
+        ({{ totalExecutions }} total)
+      </span>
+
+      <button 
+        class="btn btn-secondary btn-sm" 
+        (click)="nextPage()" 
+        [disabled]="!hasNextPage">
+        Next →
+      </button>
+    </div>
+  </div>
+</div>

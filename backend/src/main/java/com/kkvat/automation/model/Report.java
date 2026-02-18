@@ -30,9 +30,21 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String description;
     
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "view_id", nullable = false)
+    private ReportView view;
+    
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "query_config", nullable = false, columnDefinition = "JSON")
-    private String queryConfig;
+    @Column(name = "selected_columns", nullable = false, columnDefinition = "JSON")
+    private String selectedColumns; // JSON array: ["col1", "col2", "col3"]
+    
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "filter_conditions", columnDefinition = "JSON")
+    private String filterConditions; // JSON with filter rules
+    
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "sort_config", columnDefinition = "JSON")
+    private String sortConfig; // JSON with sort configuration
     
     @Enumerated(EnumType.STRING)
     @Column(name = "report_type", nullable = false)
@@ -50,11 +62,13 @@ public class Report {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     
-    @Column(name = "created_by", nullable = false)
-    private Long createdBy;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy;
     
-    @Column(name = "updated_by")
-    private Long updatedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private User updatedBy;
     
     public enum ReportType {
         EXECUTION,
