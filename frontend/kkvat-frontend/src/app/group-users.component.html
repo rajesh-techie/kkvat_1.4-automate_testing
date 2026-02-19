@@ -1,0 +1,16 @@
+<div class="group-users">
+  <h2>Assign Users to Group</h2>
+  <div *ngIf="groupId">Group ID: {{groupId}}</div>
+
+  <div class="users-list">
+    <label *ngFor="let u of allUsers" class="user-row">
+      <input type="checkbox" [checked]="selectedUserIds.has(u.id)" (change)="toggle(u.id)" />
+      <span class="username">{{u.username}}</span>
+      <span class="email">{{u.email}}</span>
+    </label>
+  </div>
+
+  <div class="actions">
+    <button (click)="save()">Save</button>
+  </div>
+</div>

@@ -53,9 +53,9 @@ public class ReportResponse {
 
     private static List<String> parseJsonArray(String json) {
         try {
-            return json != null ? com.fasterxml.jackson.databind.JsonNode.class.cast(json) != null ? 
-                    java.util.Arrays.asList(json.replace("[", "").replace("]", "").replace("\"", "").split(",")) : 
-                    null : null;
+            if (json == null || json.isEmpty()) return null;
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            return mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<java.util.List<String>>(){});
         } catch (Exception e) {
             return null;
         }

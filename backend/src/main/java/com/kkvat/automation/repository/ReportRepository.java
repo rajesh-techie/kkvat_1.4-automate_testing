@@ -24,4 +24,6 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     List<Report> findByViewId(Long viewId);
     
     Page<Report> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
+
+    Report findTopByOrderByIdDesc();
 }

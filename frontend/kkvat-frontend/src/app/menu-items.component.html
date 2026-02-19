@@ -1,0 +1,15 @@
+<div class="entity-page">
+  <h2>Menu Items</h2>
+  <form (ngSubmit)="create()">
+    <input [(ngModel)]="model.name" name="name" placeholder="Name" required />
+    <input [(ngModel)]="model.displayName" name="displayName" placeholder="Display name" />
+    <input [(ngModel)]="model.routeLink" name="routeLink" placeholder="Route link" />
+    <input [(ngModel)]="model.iconName" name="iconName" placeholder="Icon" />
+    <input [(ngModel)]="model.parentMenuItemId" name="parentMenuItemId" placeholder="Parent ID" />
+    <button type="submit">Create</button>
+  </form>
+
+  <ul>
+    <li *ngFor="let m of items">{{m.name}} ({{m.routeLink}}) <button (click)="delete(m.id)">Delete</button></li>
+  </ul>
+</div>

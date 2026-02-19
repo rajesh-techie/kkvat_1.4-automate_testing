@@ -1,0 +1,6 @@
+.group-users { padding: 16px; }
+.users-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow: auto; margin-top: 8px; }
+.user-row { display: flex; gap: 12px; align-items: center; padding: 6px; border-bottom: 1px solid #eee; }
+.username { font-weight: 600; }
+.email { color: #666; font-size: 0.9em; }
+.actions { margin-top: 12px; }

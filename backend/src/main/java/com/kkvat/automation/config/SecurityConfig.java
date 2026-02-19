@@ -71,6 +71,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login", "/auth/register").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // Allow debug endpoints for reports during development
+                        .requestMatchers("/reports/debug/**").permitAll()
                         
                         // Admin only endpoints
                         .requestMatchers("/admin/**", "/audit/**").hasRole("ADMIN")

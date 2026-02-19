@@ -1,28 +1,26 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { AuthenticationService } from './services/authentication.service';
 import { MenuComponent } from './menu.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [MenuComponent],
-  template: `
-    <div class="landing-container">
-      <h2>Welcome!</h2>
-      <app-menu [menus]="menus"></app-menu>
-      <button (click)="logout()">Logout</button>
-    </div>
-  `,
-  styles: [`.landing-container{max-width:600px;margin:40px auto;padding:24px;text-align:center;}`]
+  imports: [CommonModule, MenuComponent, RouterModule],
+  templateUrl: './landing.component.html',
+  styleUrls: ['./landing.component.css']
 })
 export class LandingComponent implements OnInit {
   menus: any[] = [];
+  userInfo: any = {};
 
   constructor(private auth: AuthenticationService, private router: Router) {}
 
   ngOnInit() {
+    // initialize menus from service and subscribe to updates
     this.menus = this.auth.getMenus();
+    this.auth.getMenusObservable().subscribe(m => this.menus = m || []);
   }
 
   logout() {
@@ -30,3 +28,4 @@ export class LandingComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 }
+

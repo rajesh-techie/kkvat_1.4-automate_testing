@@ -1,0 +1,35 @@
+.entity-page {
+	padding: 24px;
+	background: linear-gradient(180deg, #f6f8fa 0%, #eef2f6 100%);
+	border-radius: 8px;
+	box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+	font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+	color: #17233d;
+	font-size: 14px;
+}
+
+.entity-page h2 { margin-top:0; color: #0f1724; font-size: 20px; font-weight:700 }
+
+.entity-form { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start }
+.entity-form .form-row { display:flex; align-items:center; width:48%; gap:12px }
+.entity-form .form-row.full-row { width:100%; }
+.entity-form label { min-width:120px; font-weight:600; color:#0b1220 }
+.entity-form input[type="text"], .entity-form textarea { flex:1; padding:10px 12px; border:1px solid #d7e0ea; border-radius:6px; background:#ffffff; color:#0b1220; }
+.entity-form input[type="checkbox"] { transform: scale(1.05); margin-left:4px }
+.entity-form button { padding:8px 14px; background:#0b6efd; color:#fff; border:none; border-radius:6px; cursor:pointer }
+.entity-form button:hover { background:#0956d6 }
+
+.search-bar { margin-top:16px; display:flex; gap:8px; align-items:center }
+.search-bar input { padding:8px 10px; border:1px solid #d7e0ea; border-radius:6px; width:320px }
+.search-bar button { padding:8px 12px; border-radius:6px; border:1px solid #d7e0ea; background:#ffffff; cursor:pointer }
+.search-bar button:first-of-type { background:#0b6efd; color:#fff; border:none }
+
+table { width:100%; border-collapse: collapse; margin-top:18px; background: #fff; border-radius:8px; overflow:hidden }
+th,td { border-bottom:1px solid #eef3f8; padding:12px 10px; text-align:left }
+thead th { background:#f3f7fb; color:#0b1220; font-weight:700 }
+tbody tr:hover { background:linear-gradient(90deg, rgba(11,110,253,0.04), rgba(240,246,255,0.6)) }
+
+.pagination { margin-top: 14px; display:flex; align-items:center; gap:8px }
+.pagination button { padding:6px 10px; border-radius:6px; border:1px solid #d7e0ea; background:#ffffff; cursor:pointer }
+.pagination button[disabled] { opacity:.5; cursor:default }
+.pager-summary { margin-left: 12px; color: #6b7280 }

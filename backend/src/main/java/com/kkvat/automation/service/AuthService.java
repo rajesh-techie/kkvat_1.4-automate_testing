@@ -50,8 +50,7 @@ public class AuthService {
     @Autowired
     private AuditService auditService;
     
-    @Autowired
-    private MenuItemService menuItemService;
+    // menuItemService removed from login response to return tokens only
     
     @Autowired
     private HttpServletRequest request;
@@ -124,29 +123,26 @@ public class AuthService {
             // Handle concurrent sessions
             handleConcurrentSessions(user.getId());
             
-            // Create session
-            createSession(user.getId(), accessToken);
+            // Create session and obtain its id
+            Session createdSession = createSession(user.getId(), accessToken);
             
             // Build response
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             
-            // Get menu items for the logged-in user
-            java.util.List<com.kkvat.automation.dto.MenuItemDTO> userMenus = menuItemService.getMenuItemsByUserId(user.getId());
-            
-            LoginResponse response = LoginResponse.builder()
+                LoginResponse response = LoginResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .tokenType("Bearer")
                     .expiresIn(jwtExpiration / 1000) // Convert to seconds
+                    .sessionId(createdSession != null ? createdSession.getId() : null)
                     .user(LoginResponse.UserInfo.builder()
-                            .id(user.getId())
-                            .username(user.getUsername())
-                            .email(user.getEmail())
-                            .firstName(user.getFirstName())
-                            .lastName(user.getLastName())
-                            .role(user.getRole().name())
-                            .build())
-                    .menus(userMenus)
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .role(user.getRole().name())
+                        .build())
                     .build();
             
             auditService.logSuccess("LOGIN", "USER", user.getId(), null);
@@ -213,7 +209,7 @@ public class AuthService {
     }
     
     @Transactional
-    protected void createSession(Long userId, String token) {
+    protected Session createSession(Long userId, String token) {
         String tokenHash = hashToken(token);
         LocalDateTime expiresAt = LocalDateTime.now().plusNanos(jwtExpiration * 1_000_000);
         
@@ -225,7 +221,7 @@ public class AuthService {
                 .expiresAt(expiresAt)
                 .build();
         
-        sessionRepository.save(session);
+        return sessionRepository.save(session);
     }
     
     private String hashToken(String token) {

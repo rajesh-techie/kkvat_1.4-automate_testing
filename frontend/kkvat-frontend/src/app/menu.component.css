@@ -1,0 +1,11 @@
+.menu-container { padding: 8px; }
+.menu-list { list-style: none; padding: 0; margin: 0; }
+.menu-item { margin-bottom: 6px; }
+.menu-header { display: flex; align-items: center; }
+.expand-toggle { background: transparent; border: none; cursor: pointer; margin-right: 6px; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 14px; line-height: 1; color: #666; }
+.expand-toggle.expanded { transform: rotate(90deg); }
+.no-toggle { display: inline-block; width: 20px; height: 20px; margin-right: 6px; }
+.menu-link { cursor: pointer; color: #333; text-decoration: none; }
+.submenu-list { list-style: none; padding-left: 20px; margin: 6px 0; }
+.submenu-item { margin-bottom: 4px; }
+.submenu-link { cursor: pointer; color: #555; text-decoration: none; }

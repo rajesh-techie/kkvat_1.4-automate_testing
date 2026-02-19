@@ -6,6 +6,8 @@ import com.kkvat.automation.exception.BadRequestException;
 import com.kkvat.automation.exception.ResourceNotFoundException;
 import com.kkvat.automation.model.Group;
 import com.kkvat.automation.repository.GroupRepository;
+import com.kkvat.automation.repository.UserRepository;
+import com.kkvat.automation.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class GroupService {
     
     private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
     private final AuditService auditService;
     
     @Transactional(readOnly = true)
@@ -31,6 +34,34 @@ public class GroupService {
                 .map(GroupResponse::from)
                 .collect(Collectors.toList());
     }
+
+        @Transactional
+        public GroupResponse setGroupUsers(Long id, java.util.List<Long> userIds, Long updatedBy) {
+        log.debug("Setting users for group id: {}", id);
+
+        Group group = groupRepository.findById(id)
+            .orElseThrow(() -> new com.kkvat.automation.exception.ResourceNotFoundException("Group not found with id: " + id));
+
+        java.util.List<User> users = userRepository.findAllById(userIds == null ? java.util.Collections.emptyList() : userIds);
+
+        // Replace group's users with the provided set
+        java.util.Set<User> newUsers = new java.util.HashSet<>(users);
+        group.setUsers(newUsers);
+
+        group.setUpdatedBy(updatedBy);
+
+        Group saved = groupRepository.save(group);
+
+        auditService.logSuccess(
+            "UPDATE_GROUP_USERS",
+            "Group",
+            saved.getId(),
+            "Updated group users for group: " + saved.getName()
+        );
+
+        log.info("Group users updated successfully for group: {}", saved.getName());
+        return GroupResponse.from(saved);
+        }
     
     @Transactional(readOnly = true)
     public Page<GroupResponse> getAllGroups(Pageable pageable) {
@@ -155,6 +186,14 @@ public class GroupService {
         return groupRepository.findByIsActive(true)
                 .stream()
                 .map(GroupResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<com.kkvat.automation.dto.UserResponse> getUsersForGroup(Long groupId) {
+        log.debug("Fetching users for group id: {}", groupId);
+        return userRepository.findByGroupId(groupId).stream()
+                .map(com.kkvat.automation.dto.UserResponse::from)
                 .collect(Collectors.toList());
     }
 }

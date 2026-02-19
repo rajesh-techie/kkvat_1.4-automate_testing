@@ -1,108 +1,149 @@
 package com.kkvat.automation.service;
 
-import com.kkvat.automation.entity.Role;
+import com.kkvat.automation.dto.RoleRequest;
+import com.kkvat.automation.dto.RoleResponse;
+import com.kkvat.automation.exception.BadRequestException;
+import com.kkvat.automation.exception.ResourceNotFoundException;
+import com.kkvat.automation.model.Role;
 import com.kkvat.automation.repository.RoleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class RoleService {
-    
-    @Autowired
-    private RoleRepository roleRepository;
-    
-    /**
-     * Get all roles
-     */
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
-    }
-    
-    /**
-     * Get all active roles
-     */
-    public List<Role> getAllActiveRoles() {
+
+    private final RoleRepository roleRepository;
+    private final AuditService auditService;
+
+    @Transactional(readOnly = true)
+    public List<RoleResponse> getAllRoles() {
+        log.debug("Fetching all roles");
         return roleRepository.findAll().stream()
-            .filter(Role::getIsActive)
-            .toList();
+                .map(RoleResponse::from)
+                .collect(Collectors.toList());
     }
-    
-    /**
-     * Get role by ID
-     */
-    public Optional<Role> getRoleById(Long id) {
-        return roleRepository.findById(id);
+
+    @Transactional(readOnly = true)
+    public Page<RoleResponse> getAllRoles(Pageable pageable) {
+        log.debug("Fetching roles with pagination: {}", pageable);
+        return roleRepository.findAll(pageable).map(RoleResponse::from);
     }
-    
-    /**
-     * Get role by name
-     */
-    public Optional<Role> getRoleByName(String name) {
-        return roleRepository.findByName(name);
+
+    @Transactional(readOnly = true)
+    public RoleResponse getRoleById(Long id) {
+        log.debug("Fetching role by id: {}", id);
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
+        return RoleResponse.from(role);
     }
-    
-    /**
-     * Get role by name (active only)
-     */
-    public Optional<Role> getActiveRoleByName(String name) {
-        return roleRepository.findByNameAndIsActiveTrue(name);
+
+    @Transactional(readOnly = true)
+    public RoleResponse getRoleByName(String name) {
+        log.debug("Fetching role by name: {}", name);
+        Role role = roleRepository.findByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with name: " + name));
+        return RoleResponse.from(role);
     }
-    
-    /**
-     * Create new role
-     */
-    public Role createRole(Role role) {
-        role.setCreatedAt(LocalDateTime.now());
-        role.setUpdatedAt(LocalDateTime.now());
-        role.setIsActive(true);
-        return roleRepository.save(role);
+
+    @Transactional
+    public RoleResponse createRole(RoleRequest request, Long createdBy) {
+        log.debug("Creating new role: {}", request.getName());
+
+        if (roleRepository.findByName(request.getName()).isPresent()) {
+            throw new BadRequestException("Role already exists with name: " + request.getName());
+        }
+
+        Role role = Role.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .createdBy(createdBy)
+                .build();
+
+        Role saved = roleRepository.save(role);
+
+        auditService.logSuccess(
+                "CREATE_ROLE",
+                "Role",
+                saved.getId(),
+                "Created role: " + saved.getName()
+        );
+
+        log.info("Role created successfully: {}", saved.getName());
+        return RoleResponse.from(saved);
     }
-    
-    /**
-     * Update existing role
-     */
-    public Role updateRole(Long id, Role roleDetails) {
-        return roleRepository.findById(id).map(role -> {
-            role.setName(roleDetails.getName());
-            role.setDescription(roleDetails.getDescription());
-            role.setIsActive(roleDetails.getIsActive());
-            role.setUpdatedAt(LocalDateTime.now());
-            return roleRepository.save(role);
-        }).orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+
+    @Transactional
+    public RoleResponse updateRole(Long id, RoleRequest request, Long updatedBy) {
+        log.debug("Updating role id {}", id);
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
+
+        if (!role.getName().equals(request.getName())) {
+            if (roleRepository.findByName(request.getName()).isPresent()) {
+                throw new BadRequestException("Role already exists with name: " + request.getName());
+            }
+            role.setName(request.getName());
+        }
+
+        role.setDescription(request.getDescription());
+        if (request.getIsActive() != null) role.setIsActive(request.getIsActive());
+        role.setUpdatedBy(updatedBy);
+
+        Role saved = roleRepository.save(role);
+
+        auditService.logSuccess(
+                "UPDATE_ROLE",
+                "Role",
+                saved.getId(),
+                "Updated role: " + saved.getName()
+        );
+
+        log.info("Role updated successfully: {}", saved.getName());
+        return RoleResponse.from(saved);
     }
-    
-    /**
-     * Delete role by ID
-     */
-    public void deleteRole(Long id) {
-        roleRepository.deleteById(id);
+
+    @Transactional
+    public void deleteRole(Long id, Long deletedBy) {
+        log.debug("Deleting role id: {}", id);
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
+
+        String name = role.getName();
+        roleRepository.delete(role);
+
+        auditService.logSuccess(
+                "DELETE_ROLE",
+                "Role",
+                id,
+                "Deleted role: " + name
+        );
+
+        log.info("Role deleted successfully: {}", name);
     }
-    
-    /**
-     * Deactivate role
-     */
-    public Role deactivateRole(Long id) {
-        return roleRepository.findById(id).map(role -> {
-            role.setIsActive(false);
-            role.setUpdatedAt(LocalDateTime.now());
-            return roleRepository.save(role);
-        }).orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+
+    @Transactional(readOnly = true)
+    public List<RoleResponse> searchRoles(String keyword) {
+        log.debug("Searching roles with keyword: {}", keyword);
+        return roleRepository.findByNameContaining(keyword).stream()
+                .map(RoleResponse::from)
+                .collect(Collectors.toList());
     }
-    
-    /**
-     * Activate role
-     */
-    public Role activateRole(Long id) {
-        return roleRepository.findById(id).map(role -> {
-            role.setIsActive(true);
-            role.setUpdatedAt(LocalDateTime.now());
-            return roleRepository.save(role);
-        }).orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+
+    @Transactional(readOnly = true)
+    public List<RoleResponse> getActiveRoles() {
+        log.debug("Fetching active roles");
+        return roleRepository.findByIsActive(true).stream()
+                .map(RoleResponse::from)
+                .collect(Collectors.toList());
     }
 }

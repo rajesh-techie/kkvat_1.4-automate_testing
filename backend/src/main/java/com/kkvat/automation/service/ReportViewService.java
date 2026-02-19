@@ -11,6 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kkvat.automation.dto.ColumnInfoResponse;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +26,8 @@ import java.util.stream.Collectors;
 public class ReportViewService {
     private final ReportViewRepository reportViewRepository;
     private final ReportViewFieldRepository reportViewFieldRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<ReportViewResponse> getAllViews() {
         List<ReportView> views = reportViewRepository.findByIsActiveTrue();
@@ -60,6 +67,57 @@ public class ReportViewService {
         return fields.stream()
                 .map(this::convertFieldToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public List<ColumnInfoResponse> getColumnsForView(Long viewId) {
+        return getColumnsForView(viewId, "kkvat_automation");
+    }
+
+    public List<ColumnInfoResponse> getColumnsForView(Long viewId, String schema) {
+        ReportView view = reportViewRepository.findById(viewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report view not found with id: " + viewId));
+
+        String tableName = view.getTableName();
+
+        String sql = "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE " +
+                "FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = :schema AND TABLE_NAME = :tableName " +
+                "ORDER BY ORDINAL_POSITION";
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager.createNativeQuery(sql)
+                .setParameter("schema", schema)
+                .setParameter("tableName", tableName)
+                .getResultList();
+
+        List<ColumnInfoResponse> cols = new ArrayList<>();
+        for (Object[] r : rows) {
+            String columnName = r[0] != null ? r[0].toString() : null;
+            String dataType = r[1] != null ? r[1].toString() : null;
+            Integer charMax = null;
+            if (r[2] != null) {
+                if (r[2] instanceof BigInteger) {
+                    charMax = ((BigInteger) r[2]).intValue();
+                } else if (r[2] instanceof Number) {
+                    charMax = ((Number) r[2]).intValue();
+                } else {
+                    try { charMax = Integer.parseInt(r[2].toString()); } catch (Exception ignored) {}
+                }
+            }
+            String isNullable = r[3] != null ? r[3].toString() : null;
+            cols.add(new ColumnInfoResponse(columnName, dataType, charMax, isNullable));
+        }
+
+        return cols;
+    }
+
+    public List<ColumnInfoResponse> getColumnsForViewByName(String name) {
+        return getColumnsForViewByName(name, "kkvat_automation");
+    }
+
+    public List<ColumnInfoResponse> getColumnsForViewByName(String name, String schema) {
+        ReportView view = reportViewRepository.findByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Report view not found with name: " + name));
+        return getColumnsForView(view.getId(), schema);
     }
 
     private ReportViewResponse convertToResponse(ReportView view) {

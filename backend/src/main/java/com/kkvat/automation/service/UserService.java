@@ -73,13 +73,23 @@ public class UserService {
             throw new BadRequestException("Email already exists: " + request.getEmail());
         }
         
+        // Map incoming role string to enum, default to VIEWER
+        User.Role roleEnum = User.Role.VIEWER;
+        if (request.getRole() != null) {
+            try {
+                roleEnum = User.Role.valueOf(request.getRole().toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("Invalid role: " + request.getRole());
+            }
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
-                .role(request.getRole() != null ? request.getRole() : User.Role.VIEWER)
+                .role(roleEnum)
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .isLocked(false)
                 .failedLoginAttempts(0)
@@ -126,7 +136,11 @@ public class UserService {
         user.setLastName(request.getLastName());
         
         if (request.getRole() != null) {
-            user.setRole(request.getRole());
+            try {
+                user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("Invalid role: " + request.getRole());
+            }
         }
         
         if (request.getIsActive() != null) {

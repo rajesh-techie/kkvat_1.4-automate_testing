@@ -1,201 +1,107 @@
 package com.kkvat.automation.controller;
 
-import com.kkvat.automation.entity.Role;
+import com.kkvat.automation.dto.ApiResponse;
+import com.kkvat.automation.dto.RoleRequest;
+import com.kkvat.automation.dto.RoleResponse;
+import com.kkvat.automation.security.UserPrincipal;
 import com.kkvat.automation.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/roles")
-@Tag(name = "Roles", description = "Role management endpoints")
+@Tag(name = "Role Management", description = "Role CRUD operations")
 @SecurityRequirement(name = "Bearer Authentication")
+@RequiredArgsConstructor
 public class RoleController {
-    
-    @Autowired
-    private RoleService roleService;
-    
-    /**
-     * Get all roles
-     */
+
+    private final RoleService roleService;
+
     @GetMapping
-    @Operation(summary = "Get all roles", description = "Retrieve all available roles")
-    public ResponseEntity<Map<String, Object>> getAllRoles() {
-        try {
-            List<Role> roles = roleService.getAllRoles();
-            return ResponseEntity.ok(Map.of(
-                "status", true,
-                "message", "Roles retrieved successfully",
-                "data", roles
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Get all roles", description = "Retrieve all roles with pagination")
+    public ResponseEntity<Page<RoleResponse>> getAllRoles(
+            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(roleService.getAllRoles(pageable));
     }
-    
-    /**
-     * Get all active roles
-     */
-    @GetMapping("/active")
-    @Operation(summary = "Get active roles", description = "Retrieve all active roles only")
-    public ResponseEntity<Map<String, Object>> getActiveRoles() {
-        try {
-            List<Role> roles = roleService.getAllActiveRoles();
-            return ResponseEntity.ok(Map.of(
-                "status", true,
-                "message", "Active roles retrieved successfully",
-                "data", roles
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+
+    @GetMapping("/list")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Get all roles (no pagination)", description = "Retrieve all roles without pagination")
+    public ResponseEntity<List<RoleResponse>> getAllRolesList() {
+        return ResponseEntity.ok(roleService.getAllRoles());
     }
-    
-    /**
-     * Get role by ID
-     */
+
     @GetMapping("/{id}")
-    @Operation(summary = "Get role by ID", description = "Retrieve a specific role")
-    public ResponseEntity<Map<String, Object>> getRoleById(@PathVariable Long id) {
-        try {
-            return roleService.getRoleById(id)
-                .map(role -> ResponseEntity.ok(Map.of(
-                    "status", true,
-                    "message", "Role retrieved successfully",
-                    "data", role
-                )))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("status", false, "message", "Role not found")));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Get role by ID", description = "Retrieve a specific role by its ID")
+    public ResponseEntity<RoleResponse> getRoleById(@PathVariable Long id) {
+        return ResponseEntity.ok(roleService.getRoleById(id));
     }
-    
-    /**
-     * Get role by name
-     */
+
     @GetMapping("/name/{name}")
-    @Operation(summary = "Get role by name", description = "Retrieve a role by its name")
-    public ResponseEntity<Map<String, Object>> getRoleByName(@PathVariable String name) {
-        try {
-            return roleService.getRoleByName(name)
-                .map(role -> ResponseEntity.ok(Map.of(
-                    "status", true,
-                    "message", "Role retrieved successfully",
-                    "data", role
-                )))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("status", false, "message", "Role not found")));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Get role by name", description = "Retrieve a specific role by its name")
+    public ResponseEntity<RoleResponse> getRoleByName(@PathVariable String name) {
+        return ResponseEntity.ok(roleService.getRoleByName(name));
     }
-    
-    /**
-     * Create new role
-     */
+
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
     @Operation(summary = "Create role", description = "Create a new role")
-    public ResponseEntity<Map<String, Object>> createRole(@RequestBody Role role) {
-        try {
-            Role createdRole = roleService.createRole(role);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "status", true,
-                "message", "Role created successfully",
-                "data", createdRole
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+    public ResponseEntity<RoleResponse> createRole(
+            @Valid @RequestBody RoleRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        RoleResponse response = roleService.createRole(request, userPrincipal.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
-    /**
-     * Update role
-     */
+
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
     @Operation(summary = "Update role", description = "Update an existing role")
-    public ResponseEntity<Map<String, Object>> updateRole(@PathVariable Long id, @RequestBody Role role) {
-        try {
-            Role updatedRole = roleService.updateRole(id, role);
-            return ResponseEntity.ok(Map.of(
-                "status", true,
-                "message", "Role updated successfully",
-                "data", updatedRole
-            ));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("status", false, "message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+    public ResponseEntity<RoleResponse> updateRole(
+            @PathVariable Long id,
+            @Valid @RequestBody RoleRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        RoleResponse response = roleService.updateRole(id, request, userPrincipal.getId());
+        return ResponseEntity.ok(response);
     }
-    
-    /**
-     * Delete role
-     */
+
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete role", description = "Delete a role")
-    public ResponseEntity<Map<String, Object>> deleteRole(@PathVariable Long id) {
-        try {
-            roleService.deleteRole(id);
-            return ResponseEntity.ok(Map.of(
-                "status", true,
-                "message", "Role deleted successfully"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete role", description = "Delete a role (Admin only)")
+    public ResponseEntity<ApiResponse> deleteRole(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        roleService.deleteRole(id, userPrincipal.getId());
+        return ResponseEntity.ok(new ApiResponse(true, "Role deleted successfully"));
     }
-    
-    /**
-     * Deactivate role
-     */
-    @PutMapping("/{id}/deactivate")
-    @Operation(summary = "Deactivate role", description = "Deactivate a role")
-    public ResponseEntity<Map<String, Object>> deactivateRole(@PathVariable Long id) {
-        try {
-            Role deactivatedRole = roleService.deactivateRole(id);
-            return ResponseEntity.ok(Map.of(
-                "status", true,
-                "message", "Role deactivated successfully",
-                "data", deactivatedRole
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Search roles", description = "Search roles by name")
+    public ResponseEntity<List<RoleResponse>> searchRoles(@RequestParam String keyword) {
+        return ResponseEntity.ok(roleService.searchRoles(keyword));
     }
-    
-    /**
-     * Activate role
-     */
-    @PutMapping("/{id}/activate")
-    @Operation(summary = "Activate role", description = "Activate a role")
-    public ResponseEntity<Map<String, Object>> activateRole(@PathVariable Long id) {
-        try {
-            Role activatedRole = roleService.activateRole(id);
-            return ResponseEntity.ok(Map.of(
-                "status", true,
-                "message", "Role activated successfully",
-                "data", activatedRole
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
-        }
+
+    @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Get active roles", description = "Retrieve all active roles")
+    public ResponseEntity<List<RoleResponse>> getActiveRoles() {
+        return ResponseEntity.ok(roleService.getActiveRoles());
     }
 }

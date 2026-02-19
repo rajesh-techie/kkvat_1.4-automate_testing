@@ -3,6 +3,7 @@ package com.kkvat.automation.controller;
 import com.kkvat.automation.dto.ApiResponse;
 import com.kkvat.automation.dto.GroupRequest;
 import com.kkvat.automation.dto.GroupResponse;
+import com.kkvat.automation.dto.GroupUsersRequest;
 import com.kkvat.automation.security.UserPrincipal;
 import com.kkvat.automation.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,6 +52,24 @@ public class GroupController {
     @Operation(summary = "Get group by ID", description = "Retrieve a specific group by its ID")
     public ResponseEntity<GroupResponse> getGroupById(@PathVariable Long id) {
         return ResponseEntity.ok(groupService.getGroupById(id));
+    }
+
+    @GetMapping("/{id}/users")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Get users for group", description = "Retrieve users assigned to a group")
+    public ResponseEntity<java.util.List<com.kkvat.automation.dto.UserResponse>> getUsersForGroup(@PathVariable Long id) {
+        return ResponseEntity.ok(groupService.getUsersForGroup(id));
+    }
+
+    @PutMapping("/{id}/users")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER')")
+    @Operation(summary = "Set users for group", description = "Assign users to a group")
+    public ResponseEntity<GroupResponse> setGroupUsers(
+            @PathVariable Long id,
+            @RequestBody GroupUsersRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        GroupResponse response = groupService.setGroupUsers(id, request.getUserIds(), userPrincipal.getId());
+        return ResponseEntity.ok(response);
     }
     
     @GetMapping("/name/{name}")

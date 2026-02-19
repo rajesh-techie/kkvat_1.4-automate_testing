@@ -1,0 +1,28 @@
+<div class="menu-container">
+  <ul class="menu-list">
+    <li *ngFor="let menu of getRootMenus()" class="menu-item" [class.has-children]="hasChildren(getId(menu))">
+      <div class="menu-header">
+        <button 
+          *ngIf="hasChildren(getId(menu))"
+          (click)="toggleMenu(getId(menu))"
+          class="expand-toggle"
+          [class.expanded]="isExpanded(getId(menu))"
+        >
+          ▶
+        </button>
+        <span *ngIf="!hasChildren(getId(menu))" class="no-toggle"></span>
+
+        <a [routerLink]="getRoute(menu)" class="menu-link">{{ getName(menu) }}</a>
+      </div>
+
+      <ul 
+        *ngIf="hasChildren(getId(menu)) && isExpanded(getId(menu))"
+        class="submenu-list"
+      >
+        <li *ngFor="let submenu of getChildMenus(getId(menu))" class="submenu-item">
+          <a [routerLink]="getRoute(submenu)" class="submenu-link">{{ getName(submenu) }}</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>

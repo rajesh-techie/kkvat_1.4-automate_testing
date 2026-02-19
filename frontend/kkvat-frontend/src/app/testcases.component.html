@@ -1,0 +1,25 @@
+<div class="entity-page">
+  <h2>Test Cases</h2>
+  <form (ngSubmit)="create()">
+    <input [(ngModel)]="model.name" name="name" placeholder="Name" required />
+    <textarea [(ngModel)]="model.description" name="description" placeholder="Description"></textarea>
+    <textarea [(ngModel)]="model.recordedActions" name="recordedActions" placeholder="Recorded actions" required></textarea>
+    <input [(ngModel)]="model.groupId" name="groupId" placeholder="Group ID" />
+    <input [(ngModel)]="model.tags" name="tags" placeholder="Tags" />
+    <input [(ngModel)]="model.baseUrl" name="baseUrl" placeholder="Base URL" />
+    <input type="number" [(ngModel)]="model.timeoutSeconds" name="timeoutSeconds" placeholder="Timeout seconds" />
+    <button type="submit">Create</button>
+  </form>
+
+  <table>
+    <thead><tr><th>Name</th><th>Status</th><th>Group</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let t of testcases">
+        <td>{{t.name}}</td>
+        <td>{{t.status}}</td>
+        <td>{{t.groupId}}</td>
+        <td><button (click)="delete(t.id || t.ID)">Delete</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

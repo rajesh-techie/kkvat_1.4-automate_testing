@@ -2,7 +2,7 @@ package com.kkvat.automation.service;
 
 import com.kkvat.automation.dto.MenuItemDTO;
 import com.kkvat.automation.entity.MenuItem;
-import com.kkvat.automation.entity.Role;
+import com.kkvat.automation.model.Role;
 import com.kkvat.automation.model.User;
 import com.kkvat.automation.repository.MenuItemRepository;
 import com.kkvat.automation.repository.RoleRepository;

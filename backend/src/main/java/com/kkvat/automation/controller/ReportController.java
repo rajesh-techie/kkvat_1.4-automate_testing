@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.kkvat.automation.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/reports")
@@ -72,5 +73,20 @@ public class ReportController {
                 pageable,
                 reportService.getReportsByView(viewId).size()
         ));
+    }
+
+    @GetMapping("/debug/latest")
+    public ResponseEntity<ReportResponse> getLatestReport() {
+        return ResponseEntity.ok(reportService.getLatestReport());
+    }
+
+    @GetMapping("/debug/raw/latest")
+    public ResponseEntity<java.util.Map<String, Object>> getLatestReportRaw() {
+        return ResponseEntity.ok(reportService.getLatestReportRaw());
+    }
+
+    @PostMapping("/debug/insert-sample/{viewId}")
+    public ResponseEntity<ReportResponse> insertSampleReport(@PathVariable Long viewId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(reportService.insertSampleReport(viewId));
     }
 }

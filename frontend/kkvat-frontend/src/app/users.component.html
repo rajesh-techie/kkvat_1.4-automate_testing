@@ -1,0 +1,40 @@
+<div class="entity-page">
+  <h2>Users</h2>
+  <form (ngSubmit)="create()" class="entity-form">
+    <div class="form-row"><label>Username:</label><input [(ngModel)]="model.username" name="username" required /></div>
+    <div class="form-row"><label>Email:</label><input [(ngModel)]="model.email" name="email" required /></div>
+    <div class="form-row"><label>Password:</label><input type="password" [(ngModel)]="model.password" name="password" /></div>
+    <div class="form-row"><label>First name:</label><input [(ngModel)]="model.firstName" name="firstName" /></div>
+    <div class="form-row"><label>Last name:</label><input [(ngModel)]="model.lastName" name="lastName" /></div>
+    <div class="form-row"><label>Role:</label><input [(ngModel)]="model.role" name="role" placeholder="ADMIN | TEST_MANAGER | TESTER | VIEWER" /></div>
+    <div class="form-row"><label>Active:</label><input type="checkbox" [(ngModel)]="model.isActive" name="isActive" /></div>
+    <div class="form-row full-row"><button type="submit">Create</button></div>
+  </form>
+
+  <div class="search-bar">
+    <input [(ngModel)]="searchQuery" name="search" placeholder="Search by username or email" />
+    <button type="button" (click)="search()">Search</button>
+    <button type="button" (click)="clearSearch()">Clear</button>
+  </div>
+
+  <table>
+    <thead><tr><th>Username</th><th>Email</th><th>Name</th><th>Role</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let u of users">
+        <td>{{u.username || u.userName || u.name}}</td>
+        <td>{{u.email}}</td>
+        <td>{{u.firstName}} {{u.lastName}}</td>
+        <td>{{u.role || u.roleName}}</td>
+        <td>{{u.isActive}}</td>
+        <td><button (click)="delete(u.id || u.ID)">Delete</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination" *ngIf="!isSearching && totalPages > 1">
+    <button [disabled]="page <= 0" (click)="load(page - 1)">Previous</button>
+    <button *ngFor="let p of [].constructor(totalPages); let i = index" [disabled]="i === page" (click)="load(i)">{{i + 1}}</button>
+    <button [disabled]="page >= totalPages - 1" (click)="load(page + 1)">Next</button>
+    <span class="pager-summary">Page {{page + 1}} of {{totalPages}} — Total: {{totalElements}}</span>
+  </div>
+</div>

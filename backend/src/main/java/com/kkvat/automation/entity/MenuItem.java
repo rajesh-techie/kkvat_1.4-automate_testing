@@ -1,5 +1,6 @@
 package com.kkvat.automation.entity;
 
+import com.kkvat.automation.model.Role;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;

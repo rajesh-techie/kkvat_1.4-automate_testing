@@ -47,4 +47,18 @@ public class ReportViewController {
     public ResponseEntity<List<ReportViewResponse.ReportViewFieldResponse>> getSortableFields(@PathVariable Long viewId) {
         return ResponseEntity.ok(reportViewService.getSortableFields(viewId));
     }
+
+    @GetMapping("/{viewId}/columns")
+    public ResponseEntity<List<com.kkvat.automation.dto.ColumnInfoResponse>> getViewColumns(@PathVariable Long viewId,
+                                                                                              @RequestParam(value = "schema", required = false) String schema) {
+        if (schema == null || schema.isBlank()) schema = "kkvat_automation";
+        return ResponseEntity.ok(reportViewService.getColumnsForView(viewId, schema));
+    }
+
+    @GetMapping("/name/{name}/columns")
+    public ResponseEntity<List<com.kkvat.automation.dto.ColumnInfoResponse>> getViewColumnsByName(@PathVariable String name,
+                                                                                                     @RequestParam(value = "schema", required = false) String schema) {
+        if (schema == null || schema.isBlank()) schema = "kkvat_automation";
+        return ResponseEntity.ok(reportViewService.getColumnsForViewByName(name, schema));
+    }
 }

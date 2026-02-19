@@ -1,6 +1,8 @@
 package com.kkvat.automation.security;
 
 import io.jsonwebtoken.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
     
     @Value("${app.security.jwt.secret}")
     private String jwtSecret;
@@ -58,15 +61,28 @@ public class JwtTokenProvider {
     }
     
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        
-        return claims.getSubject();
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.getSubject();
+        } catch (SecurityException | MalformedJwtException ex) {
+            logger.debug("Invalid JWT signature when parsing username: {}", ex.getMessage());
+        } catch (ExpiredJwtException ex) {
+            logger.debug("Expired JWT token when parsing username: {}", ex.getMessage());
+        } catch (UnsupportedJwtException ex) {
+            logger.debug("Unsupported JWT token when parsing username: {}", ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            logger.debug("JWT claims string is empty when parsing username: {}", ex.getMessage());
+        } catch (JwtException ex) {
+            logger.debug("JWT processing error when parsing username: {}", ex.getMessage());
+        }
+        return null;
     }
-    
+
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser()
@@ -75,13 +91,15 @@ public class JwtTokenProvider {
                     .parseSignedClaims(authToken);
             return true;
         } catch (SecurityException | MalformedJwtException ex) {
-            // Invalid JWT signature
+            logger.debug("Invalid JWT signature: {}", ex.getMessage());
         } catch (ExpiredJwtException ex) {
-            // Expired JWT token
+            logger.debug("Expired JWT token: {}", ex.getMessage());
         } catch (UnsupportedJwtException ex) {
-            // Unsupported JWT token
+            logger.debug("Unsupported JWT token: {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {
-            // JWT claims string is empty
+            logger.debug("JWT claims string is empty: {}", ex.getMessage());
+        } catch (JwtException ex) {
+            logger.debug("JWT processing error: {}", ex.getMessage());
         }
         return false;
     }

@@ -1,0 +1,21 @@
+<div class="landing-container">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <h1>Application Dashboard</h1>
+    </div>
+    <div class="navbar-user">
+      <span class="user-name">Welcome!</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <aside class="sidebar">
+      <app-menu [menuItems]="menus"></app-menu>
+    </aside>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

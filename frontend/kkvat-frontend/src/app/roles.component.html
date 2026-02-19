@@ -1,0 +1,29 @@
+<div class="entity-page">
+  <h2>Roles</h2>
+  <form (ngSubmit)="create()" class="entity-form">
+    <div class="form-row"><label>Name:</label><input [(ngModel)]="model.name" name="name" required /></div>
+    <div class="form-row"><label>Description:</label><textarea [(ngModel)]="model.description" name="description"></textarea></div>
+    <div class="form-row"><label>Active:</label><input type="checkbox" [(ngModel)]="model.isActive" name="isActive" /></div>
+    <div class="form-row full-row"><button type="submit">Create</button></div>
+  </form>
+
+  <div class="search-bar">
+    <input [(ngModel)]="searchQuery" name="search" placeholder="Search by name or description" />
+    <button type="button" (click)="search()">Search</button>
+    <button type="button" (click)="clearSearch()">Clear</button>
+  </div>
+
+  <table>
+    <thead><tr><th>Name</th><th>Description</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let r of roles">
+        <td>{{r.name}}</td>
+        <td>{{r.description}}</td>
+        <td>{{r.isActive}}</td>
+        <td><button (click)="delete(r.id || r.ID)">Delete</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+</div>

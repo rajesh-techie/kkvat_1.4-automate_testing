@@ -35,7 +35,8 @@ public class UserRequest {
     @Size(max = 50, message = "Last name must not exceed 50 characters")
     private String lastName;
     
-    private User.Role role;
+    // Accept role as a string from clients and map to enum server-side
+    private String role;
     
     private Boolean isActive;
 }
