@@ -35,22 +35,27 @@ interface ReportDto {
         <div class="form-row"><label>Type:</label><input [(ngModel)]="model.reportType" name="reportType" /></div>
         <div class="form-row"><label>Public:</label><input type="checkbox" [(ngModel)]="model.isPublic" name="isPublic" /></div>
 
-        <div class="form-row"><label>Columns:</label>
-          <select multiple [(ngModel)]="model.selectedColumns" name="selectedColumns">
-            <option *ngFor="let f of allFields" [value]="f.columnName">{{f.columnName}}</option>
-          </select>
-        </div>
+        <div class="form-row full-row inline-controls">
+          <div class="inline-item">
+            <label>Columns:</label>
+            <select multiple [(ngModel)]="model.selectedColumns" name="selectedColumns">
+              <option *ngFor="let f of allFields" [value]="f.columnName">{{f.columnName}}</option>
+            </select>
+          </div>
 
-        <div class="form-row"><label>Filters:</label>
-          <select multiple [(ngModel)]="model.filterConditions" name="filteredConditions">
-            <option *ngFor="let f of filterableFields" [value]="f.fieldName">{{f.fieldName}}</option>
-          </select>
-        </div>
+          <div class="inline-item">
+            <label>Filters:</label>
+            <select multiple [(ngModel)]="model.filterConditions" name="filteredConditions">
+              <option *ngFor="let f of filterableFields" [value]="f.fieldName">{{f.fieldName}}</option>
+            </select>
+          </div>
 
-        <div class="form-row"><label>Sort:</label>
-          <select multiple [(ngModel)]="model.sortConfig" name="sortConfig">
-            <option *ngFor="let f of sortableFields" [value]="f.fieldName">{{f.fieldName}}</option>
-          </select>
+          <div class="inline-item">
+            <label>Sort:</label>
+            <select multiple [(ngModel)]="model.sortConfig" name="sortConfig">
+              <option *ngFor="let f of sortableFields" [value]="f.fieldName">{{f.fieldName}}</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-row full-row"><button type="submit">{{model.id ? 'Save' : 'Create'}}</button><button type="button" (click)="clearCreate()">Cancel</button></div>
@@ -102,7 +107,7 @@ export class ReportsComponent implements OnInit {
   searchQuery = '';
   api = 'http://localhost:8080/api/reports';
   page = 0;
-  size = 20;
+  size = 6;
   totalPages = 0;
   totalElements = 0;
   isSearching = false;

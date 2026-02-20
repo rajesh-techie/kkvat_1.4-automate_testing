@@ -13,6 +13,7 @@ import { HttpClient } from '@angular/common/http';
 export class GroupsComponent implements OnInit {
   groups: any[] = [];
   model: any = { name: '', description: '', isActive: true };
+  editingId: number | null = null;
   searchQuery = '';
   apiBase = 'http://localhost:8080/api/groups';
   // pagination
@@ -36,11 +37,29 @@ export class GroupsComponent implements OnInit {
     });
   }
 
-  create() {
-    this.http.post<any>(this.apiBase, this.model).subscribe(() => {
-      this.model = { name: '', description: '', isActive: true };
-      this.load(0);
-    });
+  save() {
+    if (this.editingId) {
+      this.http.put<any>(`${this.apiBase}/${this.editingId}`, this.model).subscribe(() => {
+        this.cancelEdit();
+        this.load(this.page);
+      });
+    } else {
+      this.http.post<any>(this.apiBase, this.model).subscribe(() => {
+        this.model = { name: '', description: '', isActive: true };
+        this.load(0);
+      });
+    }
+  }
+
+  startEdit(g: any) {
+    const id = g.id || g.ID;
+    this.editingId = id;
+    this.model = { ...g };
+  }
+
+  cancelEdit() {
+    this.editingId = null;
+    this.model = { name: '', description: '', isActive: true };
   }
 
   delete(id: number) { this.http.delete(`${this.apiBase}/${id}`).subscribe(() => this.load(this.page)); }

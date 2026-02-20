@@ -13,6 +13,7 @@ import { HttpClient } from '@angular/common/http';
 export class UsersComponent implements OnInit {
   users: any[] = [];
   model: any = { username: '', email: '', password: '', firstName: '', lastName: '', role: '', isActive: true };
+  editingId: number | null = null;
   searchQuery = '';
   apiBase = 'http://localhost:8080/api/users';
   // pagination
@@ -57,14 +58,32 @@ export class UsersComponent implements OnInit {
     this.load(0);
   }
 
-  create() {
-    this.http.post<any>(this.apiBase, this.model).subscribe(() => {
-      this.model = { username: '', email: '', password: '', firstName: '', lastName: '', role: '', isActive: true };
-      this.load();
-    });
+  save() {
+    if (this.editingId) {
+      this.http.put<any>(`${this.apiBase}/${this.editingId}`, this.model).subscribe(() => {
+        this.cancelEdit();
+        this.load(this.page);
+      });
+    } else {
+      this.http.post<any>(this.apiBase, this.model).subscribe(() => {
+        this.model = { username: '', email: '', password: '', firstName: '', lastName: '', role: '', isActive: true };
+        this.load(this.page);
+      });
+    }
+  }
+
+  startEdit(u: any) {
+    const id = u.id || u.ID;
+    this.editingId = id;
+    this.model = { ...u };
+  }
+
+  cancelEdit() {
+    this.editingId = null;
+    this.model = { username: '', email: '', password: '', firstName: '', lastName: '', role: '', isActive: true };
   }
 
   delete(id: number) {
-    this.http.delete(`${this.apiBase}/${id}`).subscribe(() => this.load());
+    this.http.delete(`${this.apiBase}/${id}`).subscribe(() => this.load(this.page));
   }
 }

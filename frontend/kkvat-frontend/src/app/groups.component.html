@@ -1,10 +1,13 @@
 <div class="entity-page">
   <h2>Groups</h2>
-  <form (ngSubmit)="create()" class="entity-form">
+  <form (ngSubmit)="save()" class="entity-form">
     <div class="form-row"><label>Name:</label><input [(ngModel)]="model.name" name="name" required /></div>
     <div class="form-row"><label>Description:</label><textarea [(ngModel)]="model.description" name="description"></textarea></div>
     <div class="form-row"><label>Active:</label><input type="checkbox" [(ngModel)]="model.isActive" name="isActive" /></div>
-    <div class="form-row full-row"><button type="submit">Create</button></div>
+    <div class="form-row full-row">
+      <button type="submit">{{ editingId ? 'Update' : 'Create' }}</button>
+      <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
+    </div>
   </form>
 
   <div class="search-bar">
@@ -20,7 +23,10 @@
         <td>{{g.name}}</td>
         <td>{{g.description}}</td>
         <td>{{g.isActive}}</td>
-        <td><button (click)="delete(g.id || g.ID)">Delete</button></td>
+        <td>
+          <button (click)="startEdit(g)">Edit</button>
+          <button (click)="delete(g.id || g.ID)">Delete</button>
+        </td>
       </tr>
     </tbody>
   </table>

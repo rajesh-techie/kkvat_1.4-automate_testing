@@ -14,6 +14,7 @@ export class RolesComponent implements OnInit {
   roles: any[] = [];
   rolesMaster: any[] = [];
   model: any = { name: '', description: '', isActive: true };
+  editingId: number | null = null;
   searchQuery = '';
   apiBase = 'http://localhost:8080/api/roles';
   // pagination (not used for roles; backend returns all)
@@ -66,7 +67,31 @@ export class RolesComponent implements OnInit {
     return [];
   }
 
-  create() { this.http.post<any>(this.apiBase, this.model).subscribe(() => { this.model = { name: '', description: '', isActive: true }; this.loadAll(); }); }
+  save() {
+    if (this.editingId) {
+      this.http.put<any>(`${this.apiBase}/${this.editingId}`, this.model).subscribe(() => {
+        this.cancelEdit();
+        this.loadAll();
+      });
+    } else {
+      this.http.post<any>(this.apiBase, this.model).subscribe(() => {
+        this.model = { name: '', description: '', isActive: true };
+        this.loadAll();
+      });
+    }
+  }
+
+  startEdit(r: any) {
+    const id = r.id || r.ID;
+    this.editingId = id;
+    // shallow copy to avoid two-way binding mutating list entry until saved
+    this.model = { ...r };
+  }
+
+  cancelEdit() {
+    this.editingId = null;
+    this.model = { name: '', description: '', isActive: true };
+  }
 
   delete(id: number) { this.http.delete(`${this.apiBase}/${id}`).subscribe(() => this.loadAll()); }
 

@@ -1,6 +1,6 @@
 <div class="entity-page">
   <h2>Users</h2>
-  <form (ngSubmit)="create()" class="entity-form">
+  <form (ngSubmit)="save()" class="entity-form">
     <div class="form-row"><label>Username:</label><input [(ngModel)]="model.username" name="username" required /></div>
     <div class="form-row"><label>Email:</label><input [(ngModel)]="model.email" name="email" required /></div>
     <div class="form-row"><label>Password:</label><input type="password" [(ngModel)]="model.password" name="password" /></div>
@@ -8,7 +8,10 @@
     <div class="form-row"><label>Last name:</label><input [(ngModel)]="model.lastName" name="lastName" /></div>
     <div class="form-row"><label>Role:</label><input [(ngModel)]="model.role" name="role" placeholder="ADMIN | TEST_MANAGER | TESTER | VIEWER" /></div>
     <div class="form-row"><label>Active:</label><input type="checkbox" [(ngModel)]="model.isActive" name="isActive" /></div>
-    <div class="form-row full-row"><button type="submit">Create</button></div>
+    <div class="form-row full-row">
+      <button type="submit">{{ editingId ? 'Update' : 'Create' }}</button>
+      <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
+    </div>
   </form>
 
   <div class="search-bar">
@@ -26,7 +29,10 @@
         <td>{{u.firstName}} {{u.lastName}}</td>
         <td>{{u.role || u.roleName}}</td>
         <td>{{u.isActive}}</td>
-        <td><button (click)="delete(u.id || u.ID)">Delete</button></td>
+        <td>
+          <button (click)="startEdit(u)">Edit</button>
+          <button (click)="delete(u.id || u.ID)">Delete</button>
+        </td>
       </tr>
     </tbody>
   </table>

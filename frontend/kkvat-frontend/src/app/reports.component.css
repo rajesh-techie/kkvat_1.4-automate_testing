@@ -14,6 +14,10 @@
 .entity-form .form-row { display:flex; align-items:center; width:48%; gap:12px }
 .entity-form .form-row.full-row { width:100%; }
 .entity-form label { min-width:120px; font-weight:600; color:#0b1220 }
+.inline-controls { display:flex; gap:12px; align-items:flex-start }
+.inline-controls .inline-item { display:flex; flex-direction:column; flex:1; min-width:0 }
+.inline-controls .inline-item label { min-width:auto; font-weight:600 }
+.inline-controls .inline-item select { width:55%; height:40px; min-height:40px; max-height:40px; padding:6px 8px; border:1px solid #d7e0ea; border-radius:6px; background:#fff; overflow:auto }
 .entity-form input[type="text"], .entity-form input[type="password"], .entity-form input[type="email"], .entity-form input[type="number"] {
 	flex:1; padding:10px 12px; border:1px solid #d7e0ea; border-radius:6px; background:#ffffff; color:#0b1220;
 }
