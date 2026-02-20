@@ -1,0 +1,7 @@
+.entity-management { padding: 12px; }
+.entity-management table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+.entity-management th, .entity-management td { border: 1px solid #ddd; padding: 8px; }
+.entity-management .form { max-width: 600px; }
+.entity-management label { display:block; margin-top:8px; }
+.entity-management input { width:100%; padding:6px; margin-top:4px; }
+.entity-management .actions { margin-top:12px; }

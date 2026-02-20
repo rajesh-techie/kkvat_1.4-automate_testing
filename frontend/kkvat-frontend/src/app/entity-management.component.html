@@ -1,0 +1,36 @@
+<div class="entity-management">
+  <h2>Entity Management</h2>
+
+  <div class="list">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Table</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of configs">
+          <td>{{c.id}}</td>
+          <td>{{c.entityName}}</td>
+          <td>{{c.entityTableName}}</td>
+          <td>
+            <button (click)="edit(c)">Edit</button>
+            <button (click)="delete(c.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="form">
+    <h3>{{selected ? 'Edit' : 'Create'}} Configuration</h3>
+    <label>Entity Name</label>
+    <input [(ngModel)]="model.entityName" />
+    <label>Entity Table Name</label>
+    <input [(ngModel)]="model.entityTableName" />
+
+    <div class="actions">
+      <button *ngIf="!selected" (click)="create()">Create</button>
+      <button *ngIf="selected" (click)="update()">Update</button>
+      <button *ngIf="selected" (click)="selected = null; model = { entityName: '', entityTableName: '' }">Cancel</button>
+    </div>
+  </div>
+</div>
