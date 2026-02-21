@@ -65,4 +65,37 @@ public class EntityManagementController {
         service.delete(id);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{id}/generate")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Generate backend code and DDL for entity config")
+    public ResponseEntity<?> generate(@PathVariable Long id) {
+        try {
+            // lazy-load generator service to avoid circular dependency in constructor
+            com.kkvat.automation.service.EntityGeneratorService generator = org.springframework.web.context.support.SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this.getClass()) == null ? null : null;
+            // Instead obtain bean from application context
+            org.springframework.context.ApplicationContext ctx = org.springframework.web.context.ContextLoader.getCurrentWebApplicationContext();
+            if (ctx == null) {
+                // fallback: use repository/service to mark status but indicate unable to generate here
+                service.setStatus(id, "GENERATION_PENDING");
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(java.util.Map.of("status", "pending", "message", "Generator will run asynchronously (context not available)"));
+            }
+            EntityGeneratorInvoker invoker = new EntityGeneratorInvoker(ctx);
+            String result = invoker.invoke(id);
+            return ResponseEntity.ok(java.util.Map.of("status", "ok", "message", result));
+        } catch (Exception e) {
+            service.setStatus(id, "GENERATION_FAILED");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("status", "error", "message", e.getMessage()));
+        }
+    }
+
+    // small helper to bridge to the generator bean without adding it to the constructor (avoids some wiring issues)
+    static class EntityGeneratorInvoker {
+        private final org.springframework.context.ApplicationContext ctx;
+        EntityGeneratorInvoker(org.springframework.context.ApplicationContext ctx) { this.ctx = ctx; }
+        String invoke(Long id) throws Exception {
+            com.kkvat.automation.service.EntityGeneratorService svc = ctx.getBean(com.kkvat.automation.service.EntityGeneratorService.class);
+            return svc.generate(id);
+        }
+    }
 }

@@ -48,4 +48,12 @@ public class EntityManagementService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    @Transactional
+    public com.kkvat.automation.model.EntityManagement setStatus(Long id, String status) {
+        com.kkvat.automation.model.EntityManagement existing = repository.findById(id).orElseThrow(() -> new RuntimeException("EntityManagement not found"));
+        existing.setStatus(status);
+        existing.setUpdatedAt(java.time.LocalDateTime.now());
+        return repository.save(existing);
+    }
 }
