@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class EntityManagementService {
@@ -20,6 +22,15 @@ public class EntityManagementService {
 
     public List<EntityManagement> getAll() {
         return repository.findAll();
+    }
+
+    public Page<EntityManagement> getAll(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
+
+    public List<EntityManagement> search(String keyword) {
+        if (keyword == null || keyword.isBlank()) return List.of();
+        return repository.findByEntityNameContainingIgnoreCaseOrEntityTableNameContainingIgnoreCase(keyword, keyword);
     }
 
     public Optional<EntityManagement> getById(Long id) {

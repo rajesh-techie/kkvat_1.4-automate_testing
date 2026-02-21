@@ -13,6 +13,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/entity-management")
@@ -29,8 +34,14 @@ public class EntityManagementController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TEST_MANAGER')")
     @Operation(summary = "List entity configs")
-    public ResponseEntity<List<EntityManagement>> list() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<?> list(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+                                  @RequestParam(value = "keyword", required = false) String keyword) {
+        if (keyword != null && !keyword.isBlank()) {
+            List<EntityManagement> results = service.search(keyword);
+            return ResponseEntity.ok(results);
+        }
+        Page<EntityManagement> page = service.getAll(pageable);
+        return ResponseEntity.ok(page);
     }
 
     @GetMapping("/{id}")
