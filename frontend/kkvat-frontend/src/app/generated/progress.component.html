@@ -1,0 +1,17 @@
+<div class="progress-table">
+  <h3>Generator Progress - {{name}}</h3>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Step</th><th>Status</th><th>Message</th><th>Updated At</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of steps">
+        <td>{{s.step}}</td>
+        <td>{{s.name}}</td>
+        <td [class]="s.status.toLowerCase()">{{s.status}}</td>
+        <td>{{s.message}}</td>
+        <td>{{s.updatedAt}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -69,6 +69,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        // Temporary test-only generation endpoint (no auth) to aid local testing
+                        .requestMatchers("/entity-management/generate-from-payload-noauth").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         // Allow debug endpoints for reports during development

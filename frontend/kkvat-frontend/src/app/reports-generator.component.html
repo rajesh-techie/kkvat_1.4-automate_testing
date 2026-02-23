@@ -1,0 +1,57 @@
+<div class="reports-generator">
+  <h2>Reports Generator</h2>
+
+  <div class="generator-grid">
+    <section class="params">
+      <h3>Parameters</h3>
+
+      <div class="form-row">
+        <label>Report:</label>
+        <select [(ngModel)]="selectedReportId" (ngModelChange)="onReportSelect($event)">
+          <option [ngValue]="null">-- Select report --</option>
+          <option *ngFor="let r of reports" [ngValue]="r.id">{{r.name}}</option>
+        </select>
+      </div>
+
+      <div *ngIf="filterInputs.length">
+        <h4>Filters</h4>
+        <div *ngFor="let f of filterInputs" class="form-row">
+          <label>{{f.display}}:</label>
+          <ng-container [ngSwitch]="f.type">
+            <select *ngSwitchCase="'boolean'" [(ngModel)]="f.value" name="{{f.name}}">
+              <option value="">-- any --</option>
+              <option [value]="true">True</option>
+              <option [value]="false">False</option>
+            </select>
+            <input *ngSwitchDefault [(ngModel)]="f.value" name="{{f.name}}" />
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <button (click)="generate()" [disabled]="!selectedReportId || loading">{{loading ? 'Running…' : 'Generate'}}</button>
+        <button type="button" (click)="onReportSelect(null)">Clear</button>
+      </div>
+
+      <div *ngIf="error" class="error">{{error}}</div>
+    </section>
+
+    <section class="results">
+      <h3>Results</h3>
+      <p *ngIf="!results || results.length === 0">No results yet.</p>
+
+      <table *ngIf="results && results.length">
+        <thead>
+          <tr>
+            <th *ngFor="let c of (results[0] | keyvalue)">{{c.key}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of results">
+            <td *ngFor="let c of (row | keyvalue)">{{c.value}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>

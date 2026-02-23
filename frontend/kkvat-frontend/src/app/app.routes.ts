@@ -11,6 +11,8 @@ import { MenuItemsComponent } from './menu-items.component';
 import { RoleMenuAssignComponent } from './role-menu-assign.component';
 import { ReportsComponent } from './reports.component';
 import { ReportsDownloadComponent } from './reports-download.component';
+import { ReportsGeneratorComponent } from './reports-generator.component';
+import { EntityManagementComponent } from './entity-management.component';
 import { GroupUsersComponent } from './group-users.component';
 
 export const routes: Routes = [
@@ -32,6 +34,9 @@ export const routes: Routes = [
 			{ path: 'menu-items', component: MenuItemsComponent },
 			{ path: 'role-menu-assign', component: RoleMenuAssignComponent },
 			{ path: 'reports', component: ReportsComponent },
+			{ path: 'reports/generator', component: ReportsGeneratorComponent },
+			{ path: 'generated/progress/:name', loadComponent: () => import('./generated/progress.component').then(m => m.ProgressComponent) },
+			{ path: 'entity-management', component: EntityManagementComponent },
 			{ path: 'report-downloads', component: ReportsDownloadComponent },
 			{ path: 'welcome', loadComponent: () => import('./landing.component').then(m => m.LandingComponent) }
 		]

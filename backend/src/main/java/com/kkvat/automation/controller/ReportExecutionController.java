@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/report-executions")
@@ -81,5 +83,13 @@ public class ReportExecutionController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER', 'TESTER', 'VIEWER')")
     public ResponseEntity<Page<ReportExecutionResponse>> getDownloadableReports(Pageable pageable) {
         return ResponseEntity.ok(reportExecutionService.getMyExecutions(pageable));
+    }
+
+    @PostMapping("/run/{reportId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEST_MANAGER', 'TESTER')")
+    public ResponseEntity<List<Map<String, Object>>> runReportNow(@PathVariable Long reportId,
+                                                                  @RequestBody(required = false) Map<String, Object> filters) {
+        List<Map<String, Object>> rows = reportExecutionService.runReportNow(reportId, filters);
+        return ResponseEntity.ok(rows);
     }
 }

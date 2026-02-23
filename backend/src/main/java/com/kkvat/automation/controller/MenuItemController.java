@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Map;
@@ -228,6 +229,25 @@ public class MenuItemController {
                 "status", true,
                 "message", "Menu item activated successfully",
                 "data", activatedMenuItem
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("status", false, "message", "Error: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Assign a menu item to a role
+     */
+    @PostMapping("/{menuItemId}/assign/{roleId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Assign menu item to role", description = "Grant access to a menu item for a role")
+    public ResponseEntity<Map<String, Object>> assignMenuItemToRole(@PathVariable Long menuItemId, @PathVariable Long roleId) {
+        try {
+            menuItemService.assignMenuItemToRole(roleId, menuItemId);
+            return ResponseEntity.ok(Map.of(
+                "status", true,
+                "message", "Menu item assigned to role successfully"
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

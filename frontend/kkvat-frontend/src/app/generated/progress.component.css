@@ -1,0 +1,7 @@
+.progress-table { padding: 12px; }
+.progress-table table { width: 100%; border-collapse: collapse; }
+.progress-table th, .progress-table td { border: 1px solid #ddd; padding: 8px; }
+.progress-table th { background:#f4f4f4; text-align:left }
+.success { color: green; font-weight: 600 }
+.failed { color: red; font-weight: 600 }
+.in_progress { color: orange; font-weight: 600 }

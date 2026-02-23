@@ -1,0 +1,15 @@
+﻿{
+    "accessToken":  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3MTg3MzIxMiwiZXhwIjoxNzcxODc0MTEyfQ.gSGnJOt5X5n1MNWLn0gePSx3wJRxgrpIO8LEQra2CwsCWUm12q_N3vtn_xJcbjlFvwdm63CzGwB9JFMxtJyvnA",
+    "refreshToken":  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3MTg3MzIxMiwiZXhwIjoxNzcxODc2ODEyfQ.PO_OQYi9NPKrRQcJ6Fv1GsCqRcgMD0nGsjSblum-_vthS8h5eAiGs3EvDm7YFtEcDNJ6Up8YjJg_rFlJy4JWvQ",
+    "tokenType":  "Bearer",
+    "expiresIn":  900,
+    "sessionId":  167,
+    "user":  {
+                 "id":  1,
+                 "username":  "admin",
+                 "email":  "admin3@kkvat.local",
+                 "firstName":  "System",
+                 "lastName":  "Administrator",
+                 "role":  "ADMIN"
+             }
+}

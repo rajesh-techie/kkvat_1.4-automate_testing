@@ -1,36 +1,239 @@
 <div class="entity-management">
   <h2>Entity Management</h2>
 
-  <div class="list">
-    <table>
+  <!-- listing moved to bottom -->
+
+  <div class="form">
+    <h3>{{selected ? 'Edit' : 'Create'}} Configuration</h3>
+    <!-- 1 -->
+    <div class="question-row">
+      <label>1) entity_name</label>
+      <input [(ngModel)]="model.entityName" />
+    </div>
+
+    <!-- 2 -->
+    <div class="question-row">
+      <label>2) entity_table_name</label>
+      <input [(ngModel)]="model.entityTableName" />
+    </div>
+
+    <!-- 3 -->
+    <div class="question-row">
+      <label>3) entity_columns_count</label>
+      <input type="number" [(ngModel)]="model.entityColumnsCount" />
+    </div>
+
+    <!-- question 4 removed -->
+
+    <!-- 5: Columns -->
+    <h4>Columns</h4>
+    <table class="columns-table">
       <thead>
-        <tr><th>ID</th><th>Name</th><th>Table</th><th>Actions</th></tr>
+        <tr>
+          <th>Seq</th>
+          <th>Name</th>
+          <th>Length</th>
+          <th>Datatype</th>
+          <th>Type</th>
+          <th>Index</th>
+          <th>Primary</th>
+          <th>PartOfSearch</th>
+          <th>ReferentialIntegrity</th>
+          <th></th>
+        </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let c of configs">
-          <td>{{c.id}}</td>
-          <td>{{c.entityName}}</td>
-          <td>{{c.entityTableName}}</td>
+        <tr *ngFor="let col of columnsForTemplate; let i = index">
+          <td style="width:56px">{{col.column_seq}}</td>
+          <td><input [(ngModel)]="col.column_name" /></td>
+          <td><input type="number" [(ngModel)]="col.column_length" /></td>
           <td>
-            <button (click)="edit(c)">Edit</button>
-            <button (click)="delete(c.id)">Delete</button>
+            <select [(ngModel)]="col.column_datatype">
+              <option value="number">number</option>
+              <option value="small_number">small_number</option>
+              <option value="integer">integer</option>
+              <option value="string">string</option>
+              <option value="blob">blob</option>
+            </select>
+          </td>
+          <td>
+            <select [(ngModel)]="col.column_type">
+              <option value="freefield">freefield</option>
+              <option value="dropdown">dropdown</option>
+              <option value="radiobutton">radiobutton</option>
+              <option value="checkbox">checkbox</option>
+            </select>
+          </td>
+          <td>
+            <select [(ngModel)]="col.column_index">
+              <option [ngValue]="0">no</option>
+              <option [ngValue]="1">yes</option>
+            </select>
+          </td>
+          <td>
+            <select [(ngModel)]="col.column_primary">
+              <option [ngValue]="0">no</option>
+              <option [ngValue]="1">yes</option>
+            </select>
+          </td>
+          <td>
+            <select [(ngModel)]="col.column_part_of_search">
+              <option [ngValue]="0">no</option>
+              <option [ngValue]="1">yes</option>
+            </select>
+          </td>
+          <td>
+            <select [(ngModel)]="col.column_referential_integrity">
+              <option [ngValue]="0">no</option>
+              <option [ngValue]="1">yes</option>
+            </select>
+          </td>
+          <td><button (click)="deleteColumn(i)">Delete</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div><button (click)="addColumn()">Add</button></div>
+
+    <!-- question 6 removed -->
+
+    <!-- 7 -->
+    <div class="question-row">
+      <label>7) do_we_need_workflow</label>
+      <label class="inline-yesno">Yes<input type="radio" name="wf" (change)="model.doWeNeedWorkflow=true" [checked]="model.doWeNeedWorkflow"></label><label class="inline-yesno">No<input type="radio" name="wf" (change)="model.doWeNeedWorkflow=false" [checked]="!model.doWeNeedWorkflow"></label>
+    </div>
+
+    <!-- 8 -->
+    <div class="question-row">
+      <label>8) do_we_need_2_level_workflow</label>
+      <label class="inline-yesno">Yes<input type="radio" name="wf2" (change)="model.doWeNeed2LevelWorkflow=true" [checked]="model.doWeNeed2LevelWorkflow"></label><label class="inline-yesno">No<input type="radio" name="wf2" (change)="model.doWeNeed2LevelWorkflow=false" [checked]="!model.doWeNeed2LevelWorkflow"></label>
+    </div>
+
+    <!-- 9 -->
+    <div class="question-row">
+      <label>9) do_we_need_1_level_workflow</label>
+      <label class="inline-yesno">Yes<input type="radio" name="wf1" (change)="model.doWeNeed1LevelWorkflow=true" [checked]="model.doWeNeed1LevelWorkflow"></label><label class="inline-yesno">No<input type="radio" name="wf1" (change)="model.doWeNeed1LevelWorkflow=false" [checked]="!model.doWeNeed1LevelWorkflow"></label>
+    </div>
+
+    <!-- 10a -->
+    <div class="question-row">
+      <label>10a) workflow_status</label>
+      <input [(ngModel)]="model.workflowStatus" />
+    </div>
+
+    <!-- 11 -->
+    <div class="question-row">
+      <label>11) do_we_need_audit_table</label>
+      <label class="inline-yesno">Yes<input type="radio" name="audit" (change)="model.doWeNeedAuditTable=true" [checked]="model.doWeNeedAuditTable"></label><label class="inline-yesno">No<input type="radio" name="audit" (change)="model.doWeNeedAuditTable=false" [checked]="!model.doWeNeedAuditTable"></label>
+    </div>
+
+    <!-- 12 -->
+    <div class="question-row">
+      <label>12) do_we_need_archive_records</label>
+      <label class="inline-yesno">Yes<input type="radio" name="archive" (change)="model.doWeNeedArchiveRecords=true" [checked]="model.doWeNeedArchiveRecords"></label><label class="inline-yesno">No<input type="radio" name="archive" (change)="model.doWeNeedArchiveRecords=false" [checked]="!model.doWeNeedArchiveRecords"></label>
+    </div>
+
+    <!-- 13a -->
+    <div class="question-row">
+      <label>13a) criteria_fields (JSON)</label>
+      <textarea rows="3" [(ngModel)]="model.criteriaFields"></textarea>
+    </div>
+    <div class="question-row">
+      <label>13b) criteria_values (JSON)</label>
+      <textarea rows="3" [(ngModel)]="model.criteriaValues"></textarea>
+    </div>
+
+    <!-- 14 -->
+    <div class="question-row">
+      <label>14) do_we_need_create_view</label>
+      <label class="inline-yesno">Yes <input type="radio" name="createview" (change)="model.doWeNeedCreateView=true" [checked]="model.doWeNeedCreateView"></label>
+      <label class="inline-yesno">No <input type="radio" name="createview" (change)="model.doWeNeedCreateView=false" [checked]="!model.doWeNeedCreateView"></label>
+    </div>
+
+    <!-- 15 -->
+    <div class="question-row">
+      <label>15) how_many_months_main_table</label>
+      <input type="number" [(ngModel)]="model.howManyMonthsMainTable" />
+    </div>
+
+    <!-- 16 -->
+    <div class="question-row">
+      <label>16) how_many_months_archive_table</label>
+      <input type="number" [(ngModel)]="model.howManyMonthsArchiveTable" />
+    </div>
+
+    <!-- 17 -->
+    <div class="question-row">
+      <label>17) criteria_to_move_from_main_to_archive_table</label>
+      <textarea rows="3" [(ngModel)]="model.criteriaToMoveFromMainToArchiveTable"></textarea>
+    </div>
+
+    <!-- 18 -->
+    <div class="question-row">
+      <label>18) criteria_to_move_from_archive_to_delete_table</label>
+      <textarea rows="3" [(ngModel)]="model.criteriaToMoveFromArchiveToDeleteTable"></textarea>
+    </div>
+
+    <!-- 19 -->
+    <div class="question-row">
+      <label>19) things_to_create</label>
+      <textarea rows="3" [(ngModel)]="model.thingsToCreate"></textarea>
+    </div>
+
+    <!-- 20 -->
+    <div class="question-row">
+      <label>20) parent_menu</label>
+      <input [(ngModel)]="model.parentMenu" />
+    </div>
+
+    <!-- 21 -->
+    <div class="question-row">
+      <label>21) which_role_is_eligbile</label>
+      <input [(ngModel)]="model.whichRoleIsEligible" />
+    </div>
+
+    <!-- (moved) Columns table removed from here because it's now in section 5 -->
+
+    <div class="actions">
+      <button *ngIf="!selected" (click)="create()">Generate Entity</button>
+      <button *ngIf="selected" (click)="update()">Update</button>
+      <button *ngIf="selected" (click)="selected = null; model = { entityName: '', entityTableName: '' }">Cancel</button>
+    </div>
+  </div>
+  <div class="generated">
+    <h3>Generated Artifacts</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Path</th><th>Manifest</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let g of generatedForTemplate">
+          <td>{{g.name}}</td>
+          <td>{{g.path}}</td>
+          <td>{{g.manifest}}</td>
+          <td>
+            <button (click)="deleteGenerated(g.name)">Delete Files</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="form">
-    <h3>{{selected ? 'Edit' : 'Create'}} Configuration</h3>
-    <label>Entity Name</label>
-    <input [(ngModel)]="model.entityName" />
-    <label>Entity Table Name</label>
-    <input [(ngModel)]="model.entityTableName" />
-
-    <div class="actions">
-      <button *ngIf="!selected" (click)="create()">Create</button>
-      <button *ngIf="selected" (click)="update()">Update</button>
-      <button *ngIf="selected" (click)="selected = null; model = { entityName: '', entityTableName: '' }">Cancel</button>
-    </div>
+  <div class="list">
+    <h3>Configurations</h3>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Table</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of configsForTemplate">
+          <td>{{c.id}}</td>
+          <td>{{c.entityName}}</td>
+          <td>{{c.entityTableName}}</td>
+          <td>
+            <button (click)="edit(c)">Edit</button>
+            <button (click)="delete(c.id)">Delete</button>
+            <button (click)="generate(c.id)">Generate</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

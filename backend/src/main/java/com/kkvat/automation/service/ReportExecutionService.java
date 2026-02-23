@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,10 +32,12 @@ import java.util.stream.Collectors;
 public class ReportExecutionService {
     private final ReportExecutionRepository reportExecutionRepository;
     private final ReportRepository reportRepository;
+    private final com.kkvat.automation.repository.ReportViewRepository reportViewRepository;
     private final ReportScheduleRepository reportScheduleRepository;
     private final UserRepository userRepository;
     private final ReportGenerationService reportGenerationService;
     private final AuditService auditService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public Page<ReportExecutionResponse> getExecutionsByReport(Long reportId, Pageable pageable) {
         Page<ReportExecution> executions = reportExecutionRepository.findByReportIdOrderByCreatedAtDesc(reportId, pageable);
@@ -155,6 +158,90 @@ public class ReportExecutionService {
         execution.setEndTime(LocalDateTime.now());
         execution.setErrorMessage(errorMessage);
         reportExecutionRepository.save(execution);
+    }
+
+    public List<Map<String, Object>> runReportNow(Long reportId, Map<String, Object> overrides) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+        try {
+            // Determine columns
+            List<String> columns;
+            if (overrides != null && (overrides.containsKey("select_columns") || overrides.containsKey("selectColumns"))) {
+                Object colsObj = overrides.containsKey("select_columns") ? overrides.get("select_columns") : overrides.get("selectColumns");
+                if (colsObj instanceof java.util.Collection) {
+                    columns = new java.util.ArrayList<>();
+                    for (Object c : (java.util.Collection<?>) colsObj) columns.add(String.valueOf(c));
+                } else {
+                    // try parsing JSON string
+                    columns = objectMapper.readValue(String.valueOf(colsObj), List.class);
+                }
+            } else {
+                columns = reportGenerationService.parseColumns(report.getSelectedColumns());
+            }
+
+            // Determine table name and view id
+            String tableName = report.getView() != null ? report.getView().getTableName() : null;
+            Long effectiveViewId = report.getView() != null ? report.getView().getId() : null;
+            if (overrides != null && (overrides.containsKey("view_id") || overrides.containsKey("viewId"))) {
+                Object vid = overrides.containsKey("view_id") ? overrides.get("view_id") : overrides.get("viewId");
+                Long viewId = null;
+                try { viewId = Long.valueOf(String.valueOf(vid)); } catch (Exception ex) { /* ignore */ }
+                if (viewId != null) {
+                    final Long viewIdFinal = viewId;
+                    com.kkvat.automation.model.ReportView rv = reportViewRepository.findById(viewIdFinal)
+                            .orElseThrow(() -> new ResourceNotFoundException("Report view not found with id: " + viewIdFinal));
+                    tableName = rv.getTableName();
+                    effectiveViewId = rv.getId();
+                }
+            }
+
+            // Determine filters: prefer explicit filter_condition / filterConditions payload, else merge overrides into report filters
+            Map<String, Object> filters = new java.util.HashMap<>();
+            // start with report's saved filters
+            Map<String, Object> baseFilters = reportGenerationService.parseFilters(report.getFilterConditions());
+            if (baseFilters != null) filters.putAll(baseFilters);
+
+            if (overrides != null && (overrides.containsKey("filter_condition") || overrides.containsKey("filterConditions") || overrides.containsKey("filters"))) {
+                Object fobj = overrides.containsKey("filter_condition") ? overrides.get("filter_condition") : (overrides.containsKey("filterConditions") ? overrides.get("filterConditions") : overrides.get("filters"));
+                if (fobj instanceof Map) {
+                    // replace base filters with provided filters
+                    filters = new java.util.HashMap<>();
+                    for (Object k : ((Map<?,?>) fobj).keySet()) {
+                        filters.put(String.valueOf(k), ((Map<?,?>) fobj).get(k));
+                    }
+                } else {
+                    // attempt to parse json string -> map
+                    try {
+                        Map<String,Object> parsed = objectMapper.readValue(String.valueOf(fobj), Map.class);
+                        filters = parsed != null ? parsed : filters;
+                    } catch (Exception ex) {
+                        // ignore parsing error
+                    }
+                }
+            } else if (overrides != null) {
+                // treat any remaining entries in overrides as filter key-values (excluding known keys)
+                for (Map.Entry<String,Object> e : overrides.entrySet()) {
+                    String key = e.getKey();
+                    if ("select_columns".equals(key) || "selectColumns".equals(key) || "view_id".equals(key) || "viewId".equals(key) || "filter_condition".equals(key) || "filterConditions".equals(key) || "filters".equals(key)) continue;
+                    filters.put(key, e.getValue());
+                }
+            }
+
+            // sort config: prefer overrides.sortConfig else report
+            Map<String,Object> sortConfig = reportGenerationService.parseSort(report.getSortConfig());
+            if (overrides != null && (overrides.containsKey("sortConfig") || overrides.containsKey("sort_config"))) {
+                Object s = overrides.containsKey("sortConfig") ? overrides.get("sortConfig") : overrides.get("sort_config");
+                try {
+                    if (s instanceof Map) sortConfig = (Map<String,Object>) s;
+                    else sortConfig = objectMapper.readValue(String.valueOf(s), Map.class);
+                } catch (Exception ex) { /* ignore */ }
+            }
+
+            return reportGenerationService.executeRawQuery(effectiveViewId, tableName, columns, filters, sortConfig);
+        } catch (Exception e) {
+            log.error("Error running report sync", e);
+            throw new RuntimeException("Failed to execute report: " + e.getMessage(), e);
+        }
     }
 
     private Long getCurrentUserId() {

@@ -1,0 +1,29 @@
+﻿
+backend\app.log:33:2026-02-23 17:46:31 - Will secure any request with 
+[org.springframework.security.web.session.DisableEncodeUrlFilter@159c9c91, org.
+springframework.security.web.context.request.async.WebAsyncManagerIntegrationFi
+lter@71e32098, 
+org.springframework.security.web.context.SecurityContextHolderFilter@33dcbbfa, 
+org.springframework.security.web.header.HeaderWriterFilter@41c983d3, 
+org.springframework.web.filter.CorsFilter@385d9880, 
+org.springframework.security.web.authentication.logout.LogoutFilter@7def2e4f, 
+com.kkvat.automation.security.JwtAuthenticationFilter@7e5c04a4, org.springframe
+work.security.web.savedrequest.RequestCacheAwareFilter@5418225f, org.springfram
+ework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@65bcc339,
+ org.springframework.security.web.authentication.AnonymousAuthenticationFilter@
+497c267a, 
+org.springframework.security.web.session.SessionManagementFilter@4fb56bdf, 
+org.springframework.security.web.access.ExceptionTranslationFilter@2a09e0d4, 
+org.springframework.security.web.access.intercept.AuthorizationFilter@2abc6965]
+backend\app.log:205:2026-02-23 17:52:57 - Unhandled exception caught by 
+GlobalExceptionHandler
+backend\app.log:206:org.springframework.web.servlet.resource.NoResourceFoundExc
+eption: No static resource entity-management/generate-from-payload.
+backend\app.log:229:	at org.springframework.security.web.access.ExceptionTransl
+ationFilter.doFilter(ExceptionTranslationFilter.java:126)
+backend\app.log:230:	at org.springframework.security.web.access.ExceptionTransl
+ationFilter.doFilter(ExceptionTranslationFilter.java:120)
+backend\app.log:290:	at 
+org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+
+

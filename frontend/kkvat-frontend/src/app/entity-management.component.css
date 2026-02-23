@@ -1,7 +1,67 @@
 .entity-management { padding: 12px; }
 .entity-management table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
 .entity-management th, .entity-management td { border: 1px solid #ddd; padding: 8px; }
-.entity-management .form { max-width: 600px; }
-.entity-management label { display:block; margin-top:8px; }
-.entity-management input { width:100%; padding:6px; margin-top:4px; }
+.entity-management .form { max-width: 900px; }
+
+/* Each question row keeps label and control on one line */
+.question-row { display:flex; align-items:center; gap:0; margin-top:8px; }
+/* Labels autosize to their content; controls expand to fill remaining space.
+   Inline yes/no controls are adjusted below for consistent vertical alignment. */
+.question-row label { display:inline-block; width: auto !important; flex: 0 0 auto; margin: 0 6px 0 0; white-space: nowrap; align-self:center; }
+.question-row input, .question-row select { flex: 1 1 auto; min-width: 120px; }
+.question-row textarea { flex: 1 1 auto; min-width: 120px; display:block; }
+
+/* Inline yes/no controls inside question rows: align vertically */
+.question-row .inline-yesno { display:inline-flex; align-items:center; gap:0; margin: 0; padding: 0; vertical-align:middle; }
+.question-row .inline-yesno label { margin: 0; padding: 0 2px 0 0; display:flex; align-items:center; gap:0; }
+.question-row .inline-yesno input { margin: 0; padding: 0; width: 14px; height: 14px; margin-left: -6px; position: relative; left: -2px; }
+.question-row button { align-self:center; margin: 0 2px 0 0; padding: 4px 8px; }
+
+/* Default: show label and its input on same line */
+.entity-management label { display: inline-block; margin-top:8px; width: 30%; vertical-align: middle; }
+.entity-management input { display: inline-block; width: 65%; padding:6px; margin-top:4px; vertical-align: middle; }
+
+/* Make longer multi-line fields stay stacked */
+.entity-management textarea { display: block; width: 100%; padding:6px; margin-top:4px; }
+.entity-management .inline-row { display: block; margin-top:6px; }
+.entity-management .inline-row > * { display:inline-block; margin-right:8px; vertical-align:middle; }
 .entity-management .actions { margin-top:12px; }
+.inline-yesno { display:inline-flex; align-items:center; gap:0; margin: 0 1px; padding: 0; width: auto !important; min-width: 0; }
+.inline-yesno label { margin: 0; padding: 0; display:flex; align-items:center; }
+.inline-yesno input { margin: 0; padding: 0; width: 14px; height: 14px; margin-left: -6px; position: relative; left: -2px; }
+
+/* Uniform height for text/number inputs and selects (keep radios small) */
+.entity-management input[type="text"],
+.entity-management input[type="number"],
+.entity-management input:not([type="radio"]):not([type="checkbox"]),
+.entity-management select,
+.question-row input,
+.question-row select,
+.columns-table input,
+.columns-table select {
+   height: 36px;
+   box-sizing: border-box;
+   padding: 6px;
+}
+
+/* Stronger override to ensure uniformity across rules */
+.entity-management input:not([type="radio"]):not([type="checkbox"]),
+.entity-management select,
+.entity-management textarea,
+.question-row input:not([type="radio"]):not([type="checkbox"]),
+.question-row select,
+.columns-table input,
+.columns-table select {
+   height: 36px !important;
+   line-height: 20px !important;
+   box-sizing: border-box !important;
+   padding: 6px !important;
+}
+
+/* Exception: labels marked .stacked remain block-level (used for complex grouped controls, e.g. 115) */
+.entity-management label.stacked { display:block; width:100%; }
+
+/* columns table styling */
+.columns-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+.columns-table th, .columns-table td { border: 1px solid #ddd; padding: 6px; }
+.columns-table input, .columns-table select { width: 100%; }

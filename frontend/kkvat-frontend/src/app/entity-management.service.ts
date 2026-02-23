@@ -25,4 +25,16 @@ export class EntityManagementService {
   delete(id: number) {
     return this.http.delete(`${this.api}/${id}`);
   }
+
+  generate(id: number) {
+    return this.http.post<any>(`${this.api}/${id}/generate`, {});
+  }
+
+  listGenerated() {
+    return this.http.get<any[]>(`${this.api}/generated`);
+  }
+
+  deleteGenerated(name: string) {
+    return this.http.delete(`${this.api}/generated/${encodeURIComponent(name)}`);
+  }
 }

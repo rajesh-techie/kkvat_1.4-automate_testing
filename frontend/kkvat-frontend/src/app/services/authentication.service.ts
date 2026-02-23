@@ -65,6 +65,13 @@ export class AuthenticationService {
     return this.menuSubject.asObservable();
   }
 
+  setMenus(menus: any[]) {
+    try {
+      localStorage.setItem(this.menuKey, JSON.stringify(menus || []));
+    } catch (e) {}
+    this.menuSubject.next(menus || []);
+  }
+
   isLoggedIn(): boolean {
     return !!localStorage.getItem(this.tokenKey);
   }

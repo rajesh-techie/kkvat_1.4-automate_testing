@@ -1,0 +1,12 @@
+<h2>Tbl_users5 Management</h2>
+<form #f="ngForm" (ngSubmit)="onSubmit()">
+  <label>col: <input name="col" [(ngModel)]="form.col" type="text"></label><br>
+  <label>col: <input name="col" [(ngModel)]="form.col" type="text"></label><br>
+  <label>col: <input name="col" [(ngModel)]="form.col" type="text"></label><br>
+  <button type="submit">Save</button>
+</form>
+<table border=1>
+<tr><th>col</th><th>col</th><th>col</th><th>Actions</th></tr>
+<tr *ngFor="let row of rows">
+<td>{{row.col}}</td><td>{{row.col}}</td><td>{{row.col}}</td><td><button (click)="edit(row)">Edit</button> <button (click)="delete(row)">Delete</button></td></tr>
+</table>

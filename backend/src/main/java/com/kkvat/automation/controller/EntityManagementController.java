@@ -1,6 +1,9 @@
 package com.kkvat.automation.controller;
 
 import com.kkvat.automation.model.EntityManagement;
+import com.kkvat.automation.dto.EntityManagementDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kkvat.automation.security.UserPrincipal;
 import com.kkvat.automation.service.EntityManagementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,15 +23,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/api/entity-management")
+@RequestMapping("/entity-management")
 @Tag(name = "Entity Management", description = "Manage generator entity configurations")
 @SecurityRequirement(name = "Bearer Authentication")
 public class EntityManagementController {
 
     private final EntityManagementService service;
+    private final com.kkvat.automation.service.EntityGeneratorService generator;
+    private final ObjectMapper objectMapper;
 
-    public EntityManagementController(EntityManagementService service) {
+    public EntityManagementController(EntityManagementService service,
+                                      com.kkvat.automation.service.EntityGeneratorService generator,
+                                      ObjectMapper objectMapper) {
         this.service = service;
+        this.generator = generator;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -54,19 +63,68 @@ public class EntityManagementController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create entity config")
-    public ResponseEntity<EntityManagement> create(@RequestBody EntityManagement em, @AuthenticationPrincipal UserPrincipal principal) {
-        Long userId = principal != null ? principal.getId() : null;
-        EntityManagement created = service.create(em, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<?> create(@RequestBody EntityManagementDto dto, @AuthenticationPrincipal UserPrincipal principal) {
+        try {
+            EntityManagement em = objectMapper.convertValue(dto, EntityManagement.class);
+            if (dto.getCriteriaFields() != null) em.setCriteriaFields(objectMapper.writeValueAsString(dto.getCriteriaFields()));
+            if (dto.getCriteriaValues() != null) em.setCriteriaValues(objectMapper.writeValueAsString(dto.getCriteriaValues()));
+            if (dto.getColumns() != null) em.setColumns(objectMapper.writeValueAsString(dto.getColumns()));
+            Long userId = principal != null ? principal.getId() : null;
+            EntityManagement created = service.create(em, userId);
+            // Trigger generator after creation
+            String generationResult = null;
+            try {
+                generationResult = generator.generate(created.getId());
+            } catch (Exception genEx) {
+                // Optionally log or handle generation failure
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of(
+                        "status", "error",
+                        "message", "Entity created but generation failed: " + genEx.getMessage(),
+                        "entity", created
+                    ));
+            }
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(java.util.Map.of(
+                    "entity", created,
+                    "generation", generationResult
+                ));
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of("status","error","message", "Invalid JSON payload: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/generate-from-payload")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Generate backend code and DDL from payload (test only)")
+    public ResponseEntity<?> generateFromPayload(@RequestBody EntityManagementDto dto, @AuthenticationPrincipal UserPrincipal principal) {
+        try {
+            EntityManagement em = objectMapper.convertValue(dto, EntityManagement.class);
+            if (dto.getCriteriaFields() != null) em.setCriteriaFields(objectMapper.writeValueAsString(dto.getCriteriaFields()));
+            if (dto.getCriteriaValues() != null) em.setCriteriaValues(objectMapper.writeValueAsString(dto.getCriteriaValues()));
+            if (dto.getColumns() != null) em.setColumns(objectMapper.writeValueAsString(dto.getColumns()));
+            String result = generator.generateFromDto(em);
+            return ResponseEntity.ok(java.util.Map.of("status","ok","message",result));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("status","error","message", e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update entity config")
-    public ResponseEntity<EntityManagement> update(@PathVariable Long id, @RequestBody EntityManagement em, @AuthenticationPrincipal UserPrincipal principal) {
-        Long userId = principal != null ? principal.getId() : null;
-        EntityManagement updated = service.update(id, em, userId);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody EntityManagementDto dto, @AuthenticationPrincipal UserPrincipal principal) {
+        try {
+            EntityManagement em = objectMapper.convertValue(dto, EntityManagement.class);
+            if (dto.getCriteriaFields() != null) em.setCriteriaFields(objectMapper.writeValueAsString(dto.getCriteriaFields()));
+            if (dto.getCriteriaValues() != null) em.setCriteriaValues(objectMapper.writeValueAsString(dto.getCriteriaValues()));
+            if (dto.getColumns() != null) em.setColumns(objectMapper.writeValueAsString(dto.getColumns()));
+            Long userId = principal != null ? principal.getId() : null;
+            EntityManagement updated = service.update(id, em, userId);
+            return ResponseEntity.ok(updated);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of("status","error","message", "Invalid JSON payload: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -82,17 +140,7 @@ public class EntityManagementController {
     @Operation(summary = "Generate backend code and DDL for entity config")
     public ResponseEntity<?> generate(@PathVariable Long id) {
         try {
-            // lazy-load generator service to avoid circular dependency in constructor
-            com.kkvat.automation.service.EntityGeneratorService generator = org.springframework.web.context.support.SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this.getClass()) == null ? null : null;
-            // Instead obtain bean from application context
-            org.springframework.context.ApplicationContext ctx = org.springframework.web.context.ContextLoader.getCurrentWebApplicationContext();
-            if (ctx == null) {
-                // fallback: use repository/service to mark status but indicate unable to generate here
-                service.setStatus(id, "GENERATION_PENDING");
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body(java.util.Map.of("status", "pending", "message", "Generator will run asynchronously (context not available)"));
-            }
-            EntityGeneratorInvoker invoker = new EntityGeneratorInvoker(ctx);
-            String result = invoker.invoke(id);
+            String result = generator.generate(id);
             return ResponseEntity.ok(java.util.Map.of("status", "ok", "message", result));
         } catch (Exception e) {
             service.setStatus(id, "GENERATION_FAILED");
@@ -100,13 +148,27 @@ public class EntityManagementController {
         }
     }
 
-    // small helper to bridge to the generator bean without adding it to the constructor (avoids some wiring issues)
-    static class EntityGeneratorInvoker {
-        private final org.springframework.context.ApplicationContext ctx;
-        EntityGeneratorInvoker(org.springframework.context.ApplicationContext ctx) { this.ctx = ctx; }
-        String invoke(Long id) throws Exception {
-            com.kkvat.automation.service.EntityGeneratorService svc = ctx.getBean(com.kkvat.automation.service.EntityGeneratorService.class);
-            return svc.generate(id);
+    @GetMapping("/generated")
+    @PreAuthorize("hasAnyRole('ADMIN','TEST_MANAGER')")
+    @Operation(summary = "List generated artifacts")
+    public ResponseEntity<?> listGenerated() {
+        try {
+            return ResponseEntity.ok(generator.listGenerated());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("status","error","message",e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/generated/{name}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete generated artifact folder (files only)")
+    public ResponseEntity<?> deleteGenerated(@PathVariable String name) {
+        try {
+            boolean ok = generator.deleteGenerated(name);
+            if (!ok) return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(java.util.Map.of("status","deleted","name",name));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("status","error","message",e.getMessage()));
         }
     }
 }

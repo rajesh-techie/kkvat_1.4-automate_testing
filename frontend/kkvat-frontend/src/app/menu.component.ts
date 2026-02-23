@@ -101,12 +101,15 @@ export class MenuComponent {
     const l = this.getLink(item);
     if (l && l !== '#') {
       let childPath = l.startsWith('/') ? l.substring(1) : l;
+      // If the link already includes the 'landing/' prefix, preserve full path
+      if (childPath.startsWith('landing/')) {
+        return '/' + childPath;
+      }
       // If the path contains a parent prefix like admin/users, use the last segment
       if (childPath.indexOf('/') !== -1) {
         const parts = childPath.split('/').filter((p: string) => p.length);
         childPath = parts[parts.length - 1];
       }
-      if (childPath.startsWith('landing/')) return '/' + childPath;
       return '/landing/' + childPath;
     }
     const route = (item.routeLink ?? item.route ?? item.path) || '';

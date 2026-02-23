@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Entity
 @Table(name = "entity_management")
@@ -47,11 +49,9 @@ public class EntityManagement {
     private Boolean doWeNeedAuditTable;
     private Boolean doWeNeedArchiveRecords;
 
-    @Lob
     @Column(columnDefinition = "json")
     private String criteriaFields;
 
-    @Lob
     @Column(columnDefinition = "json")
     private String criteriaValues;
 
@@ -72,4 +72,21 @@ public class EntityManagement {
     private String whichRoleIsEligible;
 
     private String status;
+    
+    @Column(columnDefinition = "json")
+    private String columns;
+
+    @JsonProperty("columns")
+    public void setColumnsObject(Object cols) {
+        if (cols == null) { this.columns = null; return; }
+        if (cols instanceof String) {
+            this.columns = (String) cols;
+            return;
+        }
+        try {
+            this.columns = new ObjectMapper().writeValueAsString(cols);
+        } catch (Exception e) {
+            this.columns = cols.toString();
+        }
+    }
 }

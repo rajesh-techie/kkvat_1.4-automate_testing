@@ -7,32 +7,47 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.2)
 
-2026-02-19 19:26:09 - Starting KkvatAutomationApplication v1.4.0 using Java 17.0.10 with PID 46756 (D:\python_programs_rajesh\kkvat_1.4-automate_testing\backend\target\automation-platform-1.4.0.jar started by RajeshSrinivasan in D:\python_programs_rajesh\kkvat_1.4-automate_testing\backend)
-2026-02-19 19:26:09 - Running with Spring Boot v3.2.2, Spring v6.1.3
-2026-02-19 19:26:09 - No active profile set, falling back to 1 default profile: "default"
-2026-02-19 19:26:16 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-02-19 19:26:17 - Finished Spring Data repository scanning in 644 ms. Found 13 JPA repository interfaces.
-2026-02-19 19:26:21 - Tomcat initialized with port 8080 (http)
-2026-02-19 19:26:21 - Starting service [Tomcat]
-2026-02-19 19:26:21 - Starting Servlet engine: [Apache Tomcat/10.1.18]
-2026-02-19 19:26:21 - Initializing Spring embedded WebApplicationContext
-2026-02-19 19:26:21 - Root WebApplicationContext: initialization completed in 11588 ms
-2026-02-19 19:26:22 - HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-02-19 19:26:22 - HHH000412: Hibernate ORM core version 6.4.1.Final
-2026-02-19 19:26:22 - HHH000026: Second-level cache disabled
-2026-02-19 19:26:23 - No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-02-19 19:26:23 - HikariPool-1 - Starting...
-2026-02-19 19:26:24 - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4ac19bc6
-2026-02-19 19:26:24 - HikariPool-1 - Start completed.
-2026-02-19 19:26:24 - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-02-19 19:26:27 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-02-19 19:26:28 - Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-02-19 19:26:28 - Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-02-19 19:26:30 - Filter 'jwtAuthenticationFilter' configured for use
-2026-02-19 19:26:31 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-02-19 19:26:32 - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5ad98e6f, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@40503088, org.springframework.security.web.context.SecurityContextHolderFilter@403ca4ec, org.springframework.security.web.header.HeaderWriterFilter@19f19f89, org.springframework.web.filter.CorsFilter@77422a9f, org.springframework.security.web.authentication.logout.LogoutFilter@2ba3b4a6, com.kkvat.automation.security.JwtAuthenticationFilter@34788780, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@465b16bb, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@45e1d6a5, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@787239f5, org.springframework.security.web.session.SessionManagementFilter@373efaa2, org.springframework.security.web.access.ExceptionTranslationFilter@77480751, org.springframework.security.web.access.intercept.AuthorizationFilter@509cf73a]
-2026-02-19 19:26:33 - Tomcat started on port 8080 (http) with context path '/api'
-2026-02-19 19:26:33 - Started KkvatAutomationApplication in 28.465 seconds (process running for 32.238)
-^C2026-02-19 19:28:21 - Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-02-19 19:28:21 - HikariPool-1 - Shutdown initiated...
-2026-02-19 19:28:21 - HikariPool-1 - Shutdown completed.
+2026-02-21 22:17:39 - Starting KkvatAutomationApplication v1.4.0 using Java 17.0.10 with PID 23876 (D:\python_programs_rajesh\kkvat_1.4-automate_testing\backend\target\automation-platform-1.4.0.jar started by RajeshSrinivasan in D:\python_programs_rajesh\kkvat_1.4-automate_testing\backend)
+2026-02-21 22:17:39 - Running with Spring Boot v3.2.2, Spring v6.1.3
+2026-02-21 22:17:39 - No active profile set, falling back to 1 default profile: "default"
+2026-02-21 22:17:55 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-21 22:17:56 - Finished Spring Data repository scanning in 840 ms. Found 14 JPA repository interfaces.
+2026-02-21 22:18:23 - Tomcat initialized with port 8080 (http)
+2026-02-21 22:18:24 - Starting service [Tomcat]
+2026-02-21 22:18:24 - Starting Servlet engine: [Apache Tomcat/10.1.18]
+2026-02-21 22:18:27 - Initializing Spring embedded WebApplicationContext
+2026-02-21 22:18:27 - Root WebApplicationContext: initialization completed in 47197 ms
+2026-02-21 22:18:37 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-21 22:18:44 - HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-02-21 22:18:46 - HHH000026: Second-level cache disabled
+2026-02-21 22:18:56 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-21 22:18:58 - HikariPool-1 - Starting...
+2026-02-21 22:19:06 - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@20f63ddc
+2026-02-21 22:19:06 - HikariPool-1 - Start completed.
+2026-02-21 22:19:08 - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-02-21 22:19:29 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-21 22:19:30 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-21 22:19:31 - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-02-21 22:19:34 - Filter 'jwtAuthenticationFilter' configured for use
+2026-02-21 22:19:55 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-21 22:19:58 - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@69ab1abc, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@22f10ff6, org.springframework.security.web.context.SecurityContextHolderFilter@94d4dd, org.springframework.security.web.header.HeaderWriterFilter@5ea73927, org.springframework.web.filter.CorsFilter@6ff185a3, org.springframework.security.web.authentication.logout.LogoutFilter@7070ae1, com.kkvat.automation.security.JwtAuthenticationFilter@4d001a14, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@112e72ea, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@259c7ff3, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@320d98f5, org.springframework.security.web.session.SessionManagementFilter@61ac8777, org.springframework.security.web.access.ExceptionTranslationFilter@38c61ab, org.springframework.security.web.access.intercept.AuthorizationFilter@75d70348]
+2026-02-21 22:20:04 - Tomcat started on port 8080 (http) with context path '/api'
+2026-02-21 22:20:04 - Started KkvatAutomationApplication in 151.164 seconds (process running for 157.403)
+2026-02-21 22:20:05 - 
+    select
+        mi1_0.id,
+        mi1_0.created_at,
+        mi1_0.description,
+        mi1_0.display_name,
+        mi1_0.icon_name,
+        mi1_0.is_active,
+        mi1_0.menu_order,
+        mi1_0.name,
+        mi1_0.parent_menu_item_id,
+        mi1_0.route_link,
+        mi1_0.updated_at 
+    from
+        menu_items mi1_0 
+    where
+        mi1_0.name=?
+2026-02-21 22:20:06 - 'entity-management' menu already present (id=15)

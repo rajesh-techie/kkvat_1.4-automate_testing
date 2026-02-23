@@ -29,7 +29,7 @@ spring:
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate # Don't create tables - database is already populated
+      ddl-auto: update # Temporarily allow Hibernate to create missing tables (safe for local dev)
     show-sql: false
     properties:
       hibernate:
